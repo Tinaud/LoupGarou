@@ -13,40 +13,63 @@ public class GameManager : MonoBehaviour {
 	void Start () {
         gameStarted = false;
         player = (GameObject)Resources.Load("Player");
-        nbrPlayers = 1;
+        nbrPlayers = 0;
         AddRoles();
-        NewPlayer();
 	}
 
-	void Update () {
-        if (Input.GetKeyDown(KeyCode.Space) && nbrPlayers < 20 && !gameStarted) {
-            nbrPlayers++;
+    void Update () {
+        if (Input.GetKeyDown(KeyCode.Space) && nbrPlayers < 20 && !gameStarted)
             NewPlayer();
-        }
 
-        if(Input.GetKeyDown(KeyCode.Return) && nbrPlayers > 5 && !gameStarted) {
-            float wolfNumber = Mathf.Floor(nbrPlayers / 3);
-
-            for(int i = 0; i < wolfNumber; i++)
-                roles.Add("Loup-Garou");
-            for(int i = roles.Count; i < nbrPlayers; i++)
-                roles.Add("Villageois");
-
+        if(Input.GetKeyDown(KeyCode.Return) && nbrPlayers > 5 && !gameStarted)
             StartGame();
-        }
 	}
 
     void StartGame() {
         gameStarted = true;
 
+        float wolfNumber = Mathf.Floor(nbrPlayers / 3.0f);
+
+        for (int i = 0; i < wolfNumber; i++)
+            roles.Add("Loup-Garou");
+        for (int i = roles.Count; i < nbrPlayers; i++)
+            roles.Add("Villageois");
+
         foreach (GameObject g in playerList) {
             int r = Random.Range(0, roles.Count);
-            g.GetComponent<Player>().StartGame(roles[r]);
+
+            switch (roles[r]) {
+                case "Villageois":
+                    g.AddComponent<Villageois>();
+                    break;
+                case "Loup-Garou":
+                    g.AddComponent<Loup>();
+                    break;
+                case "Sorcière":
+                    g.AddComponent<Sorciere>();
+                    break;
+                case "Cupidon":
+                    g.AddComponent<Cupidon>();
+                    break;
+                case "Chasseur":
+                    g.AddComponent<Chasseur>();
+                    break;
+                case "Voyante":
+                    g.AddComponent<Voyante>();
+                    break;
+                default:
+                    Debug.Log("Unknown role :(");
+                    break;
+            }
+
             roles.RemoveAt(r);
         }
+
+        StartCoroutine(GameTurn());
     }
 
-    void NewPlayer() {
+    public void NewPlayer() {
+        nbrPlayers++;
         GameObject g = Instantiate(player, new Vector3(0, 0, 0), Quaternion.identity);
         playerList.Add(g);
         RearrangePlayers();
@@ -80,5 +103,11 @@ public class GameManager : MonoBehaviour {
 
     public bool IsStarted() {
         return gameStarted;
+    }
+
+    IEnumerator GameTurn() {
+        while(gameStarted) {
+            yield return new WaitForSeconds(4f);
+        }
     }
 }
