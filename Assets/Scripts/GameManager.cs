@@ -5,11 +5,13 @@ using UnityEngine;
 public class GameManager : MonoBehaviour {
 
     bool gameStarted;
-    public GameObject player,
+    GameObject player,
                refVoyante,
                refChasseur,
                refCupidon,
                refSorciere;
+
+    public List<GameObject> victims = new List<GameObject>();
 
     int nbrPlayers;
     public List<GameObject> playerList = new List<GameObject>();
@@ -126,6 +128,14 @@ public class GameManager : MonoBehaviour {
         refLoups.Remove(o);
     }
 
+    public void AddVictim(GameObject o) {
+        victims.Add(o);
+    }
+
+    public void SaveVictim() {
+        victims.Clear();
+    }
+
     IEnumerator GameTurn() {
         //First Turn only
         yield return new WaitForSeconds(2f);
@@ -151,18 +161,29 @@ public class GameManager : MonoBehaviour {
             }
 
             //SORCIÈRE
-            /*if(refSorciere != null) {
+            if(refSorciere != null) {
                 refSorciere.GetComponent<BaseRole>().PlayTurn();
-                yield return new WaitUntil(() => refCupidon.GetComponent<BaseRole>().IsReady());
-            }*/
-            
-            yield return new WaitForSeconds(4f);
+                yield return new WaitUntil(() => refSorciere.GetComponent<BaseRole>().IsReady());
+            }
 
+            //FIN DE LA NUIT
+            if(victims.Count > 0) {
+                foreach(GameObject o in victims)
+                    o.GetComponent<BaseRole>().Die();
+
+                victims.Clear();
+            }
+            else
+                Debug.Log("{MORT} Il n'y a aucun mort cette nuit! gg wp");
+
+            Debug.Log(playerList.Count + " " + refLoups.Count);
+
+            yield return new WaitForSeconds(4f);
+            
             if (refLoups.Count <= 0) {
                 Debug.Log("VILLAGEOIS GAGNENT!");
                 gameStarted = false;
             }
-
             else if(playerList.Count == refLoups.Count) {
                 Debug.Log("LOUPS GAGNENT!");
                 gameStarted = false;

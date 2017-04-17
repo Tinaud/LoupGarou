@@ -12,7 +12,7 @@ abstract public class BaseRole : MonoBehaviour {
         players = Camera.main.GetComponent<GameManager>().GetPlayers();
         lover = null;
         selectedPlayer = null;
-        StartCoroutine(GetComponent<Player>().Vote());
+        //StartCoroutine(GetComponent<Player>().Vote());
 	}
 
     public abstract void PlayTurn();

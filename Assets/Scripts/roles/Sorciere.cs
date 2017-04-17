@@ -2,14 +2,26 @@
 
 public class Sorciere : BaseRole {
 
+    bool lifePotion;
+    bool deathPotion;
+
     public override void Start() {
+        lifePotion = true;
+        deathPotion = true;
+
         base.Start();
     }
 
     public override void PlayTurn() {
         ready = false;
 
-        Debug.Log("Witch turn");
+        if(lifePotion) {
+
+        }
+
+        if(deathPotion) {
+
+        }
 
         ready = true;
     }
