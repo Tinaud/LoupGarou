@@ -1,11 +1,18 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class Voyante : BaseRole {
 
-	// Use this for initialization
 	public override void Start () {
         base.Start();
 	}
+
+    public override void PlayTurn() {
+        ready = false;
+
+        selectedPlayer = players[Random.Range(0, players.Count)];
+
+        Debug.Log("[VOYANTE] Le joueur " + selectedPlayer.GetComponent<Player>().ID() + " est : " + selectedPlayer.GetComponent<BaseRole>().GetType());
+
+        ready = true;
+    }
 }

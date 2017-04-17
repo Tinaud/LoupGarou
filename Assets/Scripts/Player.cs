@@ -4,7 +4,7 @@ using UnityEngine;
 public class Player : MonoBehaviour {
 
     static int nextId = 0;
-    int id;
+    public int id;
     GameManager gm;
     Quaternion targetRotation;
 

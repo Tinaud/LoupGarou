@@ -1,11 +1,16 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class Sorciere : BaseRole {
 
-    // Use this for initialization
     public override void Start() {
         base.Start();
+    }
+
+    public override void PlayTurn() {
+        ready = false;
+
+        Debug.Log("Witch turn");
+
+        ready = true;
     }
 }

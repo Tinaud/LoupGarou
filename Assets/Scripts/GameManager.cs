@@ -5,15 +5,27 @@ using UnityEngine;
 public class GameManager : MonoBehaviour {
 
     bool gameStarted;
-    GameObject player;
+    public GameObject player,
+               refVoyante,
+               refChasseur,
+               refCupidon,
+               refSorciere;
+
     int nbrPlayers;
-    List<GameObject> playerList = new List<GameObject>();
+    public List<GameObject> playerList = new List<GameObject>();
+    public List<GameObject> refLoups = new List<GameObject>();
     List<string> roles = new List<string>();
 
 	void Start () {
         gameStarted = false;
         player = (GameObject)Resources.Load("Player");
         nbrPlayers = 0;
+
+        refVoyante = null;
+        refChasseur = null;
+        refSorciere = null;
+        refCupidon = null;
+
         AddRoles();
 	}
 
@@ -44,18 +56,23 @@ public class GameManager : MonoBehaviour {
                     break;
                 case "Loup-Garou":
                     g.AddComponent<Loup>();
+                    refLoups.Add(g);
                     break;
                 case "Sorcière":
                     g.AddComponent<Sorciere>();
+                    refSorciere = g;
                     break;
                 case "Cupidon":
                     g.AddComponent<Cupidon>();
+                    refCupidon = g;
                     break;
                 case "Chasseur":
                     g.AddComponent<Chasseur>();
+                    refChasseur = g;
                     break;
                 case "Voyante":
                     g.AddComponent<Voyante>();
+                    refVoyante = g;
                     break;
                 default:
                     Debug.Log("Unknown role :(");
@@ -105,9 +122,51 @@ public class GameManager : MonoBehaviour {
         return gameStarted;
     }
 
+    public void RemoveWolf(GameObject o) {
+        refLoups.Remove(o);
+    }
+
     IEnumerator GameTurn() {
+        //First Turn only
+        yield return new WaitForSeconds(2f);
+
+        //CUPIDON
+        if(refCupidon != null) {
+            refCupidon.GetComponent<BaseRole>().PlayTurn();
+            yield return new WaitUntil(() => refCupidon.GetComponent<BaseRole>().IsReady());
+        }
+
         while(gameStarted) {
+
+            //VOYANTE
+            if(refVoyante != null) {
+                refVoyante.GetComponent<BaseRole>().PlayTurn();
+                yield return new WaitUntil(() => refVoyante.GetComponent<BaseRole>().IsReady());
+            }
+
+            //LOUPS
+            if(refLoups.Count > 0) {
+                refLoups[0].GetComponent<BaseRole>().PlayTurn();
+                yield return new WaitUntil(() => refLoups[0].GetComponent<BaseRole>().IsReady());
+            }
+
+            //SORCIÈRE
+            /*if(refSorciere != null) {
+                refSorciere.GetComponent<BaseRole>().PlayTurn();
+                yield return new WaitUntil(() => refCupidon.GetComponent<BaseRole>().IsReady());
+            }*/
+            
             yield return new WaitForSeconds(4f);
+
+            if (refLoups.Count <= 0) {
+                Debug.Log("VILLAGEOIS GAGNENT!");
+                gameStarted = false;
+            }
+
+            else if(playerList.Count == refLoups.Count) {
+                Debug.Log("LOUPS GAGNENT!");
+                gameStarted = false;
+            } 
         }
     }
 }
