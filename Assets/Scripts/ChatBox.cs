@@ -12,6 +12,12 @@ public class ChatBox : MonoBehaviour {
     public GameObject TextPrefab;
 
     private List<GameObject> MessagesBox = new List<GameObject>();
+    private float MaxLength = 0.0f;
+
+    private RectTransform ContentTransform;
+    private Text MsgText;
+    private GameObject Msg;
+
 
     // Use this for initialization
     void Start () {
@@ -26,21 +32,29 @@ public class ChatBox : MonoBehaviour {
             ChatUpdate(TextZone.text);
             TextZone.text = "";
         }
+        UpdateTextPos();
     }
 
     void ChatUpdate (string newMsg)
     {
-        RectTransform ContentTransform;
-        Text MsgText;
-
-        GameObject Msg = Instantiate(TextPrefab, new Vector3(0, 0, 0), Quaternion.identity);
+        Msg = Instantiate(TextPrefab, new Vector3(0, 0, 0), Quaternion.identity);
         Msg.transform.SetParent(ChatZone.transform);
         MessagesBox.Add(Msg);
-        Msg.transform.localPosition = new Vector3(105.0f, -14.0f* MessagesBox.Count, 0);
+        Msg.transform.localPosition = new Vector3(0, -14.0f* MessagesBox.Count, 0);
         MsgText = Msg.GetComponent<Text>();
-
         MsgText.text = newMsg;
+    }
+
+    void UpdateTextPos()
+    {
+        for (int i = 0; i < MessagesBox.Count; i++)
+        {
+            ContentTransform = MessagesBox[i].GetComponent<RectTransform>();
+            if (ContentTransform.sizeDelta.x > MaxLength)
+                MaxLength = ContentTransform.sizeDelta.x-355.0f;
+            MessagesBox[i].transform.localPosition = new Vector3(ContentTransform.sizeDelta.x/2 + 2.0f, -14.0f * (i+1), 0);
+        }
         ContentTransform = ChatZone.GetComponent<RectTransform>();
-        ContentTransform.sizeDelta = new Vector2(0, 17.10001f * MessagesBox.Count);
+        ContentTransform.sizeDelta = new Vector2(MaxLength, 17.10001f * MessagesBox.Count);
     }
 }
