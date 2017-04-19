@@ -1,7 +1,8 @@
 ﻿using System.Collections;
 using UnityEngine;
+using UnityEngine.Networking;
 
-public class Player : MonoBehaviour {
+public class Player : NetworkBehaviour {
 
     static int nextId = 0;
     public int id;
@@ -9,12 +10,24 @@ public class Player : MonoBehaviour {
     Quaternion targetRotation;
 
     void Start() {
-        id = nextId++;
-        gm = Camera.main.GetComponent<GameManager>();
+		if (isLocalPlayer) {
+			id = nextId++;
+			gm = Camera.main.GetComponent<GameManager> ();
+		}
     }
 
+	public override void OnStartLocalPlayer() {
+		changeColor (Color.red);
+	}
+		
+	public void changeColor(Color c) {
+		GetComponent<MeshRenderer> ().material.color = c;
+	}
+
     void Update() {
-        transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * 2.0f);
+		if (isLocalPlayer) {
+			transform.rotation = Quaternion.Slerp (transform.rotation, targetRotation, Time.deltaTime * 2.0f);
+		}
     }
 
     public IEnumerator Vote() {
