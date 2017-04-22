@@ -1,10 +1,12 @@
 fileFormatVersion: 2
 guid: e8f18b6ec9f3a1647b9f81cdca9e898c
-timeCreated: 1491268485
+timeCreated: 1492872986
 licenseType: Free
 MonoImporter:
   serializedVersion: 2
-  defaultReferences: []
+  defaultReferences:
+  - ChatPrefab: {fileID: 1856578143665156, guid: dd416d664153ef74db223a0c7641735d,
+      type: 2}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 

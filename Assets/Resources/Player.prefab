@@ -42,6 +42,7 @@ GameObject:
   - component: {fileID: 114320956720333592}
   - component: {fileID: 114924059750414842}
   - component: {fileID: 114126132841285086}
+  - component: {fileID: 136043223298443682}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -187,6 +188,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   id: 0
+  ChatPrefab: {fileID: 1856578143665156, guid: dd416d664153ef74db223a0c7641735d, type: 2}
 --- !u!114 &114924059750414842
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -219,6 +221,19 @@ MonoBehaviour:
     i15: 196
   m_ServerOnly: 0
   m_LocalPlayerAuthority: 1
+--- !u!136 &136043223298443682
+CapsuleCollider:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1367057256594728}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  m_Radius: 0.5
+  m_Height: 2
+  m_Direction: 1
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!136 &136434757451389468
 CapsuleCollider:
   m_ObjectHideFlags: 1
