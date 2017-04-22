@@ -63,7 +63,7 @@ public class ChatBox : MonoBehaviour
             for (int i = 0; i < MessagesBox.Count; i++)
             {
                 ContentTransform = MessagesBox[i].GetComponent<RectTransform>();
-                if (ContentTransform.sizeDelta.x > MaxLength)
+                if (ContentTransform.sizeDelta.x > (MaxLength+355.0f))
                     MaxLength = ContentTransform.sizeDelta.x-355.0f;
                 MessagesBox[i].transform.localPosition = new Vector3(ContentTransform.sizeDelta.x/2 + 2.0f, -14.0f * (i+1), 0);
             }

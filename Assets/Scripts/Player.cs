@@ -18,7 +18,7 @@ public class Player : NetworkBehaviour {
     bool yourTurn = true;
 
     void Start() {
-		if (isLocalPlayer) {
+		if (true) {
 			id = nextId++;
 			gm = Camera.main.GetComponent<GameManager> ();
 			ChatB = Instantiate (ChatPrefab, new Vector3 (0, 0, 0), Quaternion.identity);
@@ -43,13 +43,16 @@ public class Player : NetworkBehaviour {
     public void SenMsg(string Message)
     {
         //Appel server pour l'envoie du message
-        AddMsg(Message);
+        if (isLocalPlayer)
+            GameManager.instance.MessageToPlayers(Message);
+        //AddMsg(Message);
     }
 
     public void AddMsg(string Message)
     {
         //Appel su serveur pour l'ajout du message
-        CurrentChat.ChatUpdate(Message);
+        if (true)
+            CurrentChat.ChatUpdate(Message);
     }
 
     void Update() {
