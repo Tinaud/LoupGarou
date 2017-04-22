@@ -1,9 +1,29 @@
 ﻿using System.Collections;
 using UnityEngine;
 using UnityEngine.Networking;
+using UnityEngine.Networking.NetworkSystem;
 using UnityEngine.UI;
 
 public class Player : NetworkBehaviour {
+
+	const short CHAT_MESSAGE = 1002;
+
+	class ChatMessage : MessageBase {
+		public string message;
+	}
+
+	public void SendChatMessage(string _message) {
+		ChatMessage msg = new ChatMessage ();
+		msg.message = _message;
+		Debug.Log ("Sending... " + msg.message);
+		NetworkServer.SendToAll (MsgType.Highest+2, msg);
+	}
+
+	public void ReadMessage(NetworkMessage netMsg) {
+		ChatMessage msg = netMsg.ReadMessage<ChatMessage>();
+		Debug.Log ("Receiving... " + msg.message);
+		CurrentChat.ChatUpdate(msg.message);
+	}
 
     static int nextId = 0;
     public int id;
@@ -13,9 +33,11 @@ public class Player : NetworkBehaviour {
     public GameObject ChatPrefab;
     GameObject SelectButton;
     GameObject ChatB;
-    ChatBox CurrentChat;
+	ChatBox CurrentChat;
+
     Player Pla;
     bool yourTurn = true;
+
 
     void Start() {
 		if (isLocalPlayer) {
@@ -40,13 +62,15 @@ public class Player : NetworkBehaviour {
 		GetComponent<MeshRenderer> ().material.color = c;
 	}
 
-    public void SenMsg(string Message)
+	[Command]
+    public void CmdSenMsg(string Message)
     {
         //Appel server pour l'envoie du message
-        AddMsg(Message);
+        RpcAddMsg(Message);
     }
 
-    public void AddMsg(string Message)
+	[ClientRpc]
+    public void RpcAddMsg(string Message)
     {
         //Appel su serveur pour l'ajout du message
         CurrentChat.ChatUpdate(Message);

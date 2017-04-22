@@ -1,8 +1,9 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Networking;
 
-public class GameManager : MonoBehaviour {
+public class GameManager : NetworkBehaviour {
 
     bool gameStarted;
     GameObject player,
@@ -175,7 +176,7 @@ public class GameManager : MonoBehaviour {
 
         //CUPIDON
         if(refCupidon != null) {
-            MessageToPlayers("MJ : Cupidon choisi deux personnes qui tomberont amoureuse");
+            CmdMessageToPlayers("MJ : Cupidon choisi deux personnes qui tomberont amoureuse");
             refCupidon.GetComponent<BaseRole>().PlayTurn();
             yield return new WaitUntil(() => refCupidon.GetComponent<BaseRole>().IsReady());
         }
@@ -225,11 +226,12 @@ public class GameManager : MonoBehaviour {
         }
     }
 
-    public void MessageToPlayers(string Msg)
+	[Command]
+    public void CmdMessageToPlayers(string Msg)
     {
         foreach (GameObject pla in playerList)
         {
-            pla.GetComponent<Player>().AddMsg(Msg);
+            pla.GetComponent<Player>().RpcAddMsg(Msg);
         }
     }
 }

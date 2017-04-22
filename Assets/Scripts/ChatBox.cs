@@ -40,7 +40,7 @@ public class ChatBox : MonoBehaviour
                 TextZone.text = P1.pseudo + " : " + TextZone.text;
             else
                 TextZone.text = "NoName : " + TextZone.text;
-            P1.SenMsg(TextZone.text);
+			P1.SendChatMessage(TextZone.text);
             TextZone.text = "";
         }
         UpdateTextPos();

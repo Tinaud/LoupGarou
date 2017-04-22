@@ -11,6 +11,7 @@ using System.Text.RegularExpressions;
 
 public class NetworkManager_Custom : NetworkManager {
 
+	const short CHAT_MESSAGE = 1002;
 	// Singleton 
 	public static NetworkManager_Custom custom_singleton = null;
 	void Start() {
@@ -26,10 +27,14 @@ public class NetworkManager_Custom : NetworkManager {
 
 
 	public override void OnServerAddPlayer(NetworkConnection conn, short playerControllerId) {
-		GameObject player = Instantiate (playerPrefab, Vector3.zero, Quaternion.identity) as GameObject;
-		player.GetComponent<Player> ().changeColor (Color.blue);
+		GameObject playerGO = Instantiate (playerPrefab, Vector3.zero, Quaternion.identity) as GameObject;
+
+		Player player = playerGO.GetComponent<Player> ();
+		NetworkServer.RegisterHandler (MsgType.Highest+2, player.ReadMessage);
+
 		GameManager.instance.AddPlayer (player.gameObject);
-		NetworkServer.AddPlayerForConnection (conn, player, playerControllerId);
+
+		NetworkServer.AddPlayerForConnection (conn, playerGO, playerControllerId);
 	}
 
 	public void CreateRoom () {
@@ -54,6 +59,5 @@ public class NetworkManager_Custom : NetworkManager {
 		maxConnections = maxConn;
 		NetworkManager.singleton.StartHost(matchInfo);
 	}
-
 
 }
