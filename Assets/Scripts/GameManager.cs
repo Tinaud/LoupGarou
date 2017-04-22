@@ -18,7 +18,20 @@ public class GameManager : MonoBehaviour {
     public List<GameObject> refLoups = new List<GameObject>();
     List<string> roles = new List<string>();
 
-	void Start () {
+    private static GameManager instance;
+    public static GameManager Instance
+    {
+        get 
+        {
+            if (instance == null)
+            {
+                instance = new GameManager();
+            }
+            return instance;
+        }
+    }
+
+    void Start () {
         gameStarted = false;
         player = (GameObject)Resources.Load("Player");
         nbrPlayers = 0;
@@ -188,6 +201,14 @@ public class GameManager : MonoBehaviour {
                 Debug.Log("LOUPS GAGNENT!");
                 gameStarted = false;
             } 
+        }
+    }
+
+    public void MessageToPlayers(string Msg)
+    {
+        foreach (GameObject pla in playerList)
+        {
+            pla.GetComponent<Player>().AddMsg(Msg);
         }
     }
 }

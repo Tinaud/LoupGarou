@@ -1,11 +1,12 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Networking;
 using UnityEngine.UI;
 
 
-public class ChatBox : MonoBehaviour {
-
+public class ChatBox : NetworkBehaviour
+{
     //public ScrollRect ChatZone;
     public InputField TextZone;
     public GameObject ChatZone;
@@ -40,13 +41,13 @@ public class ChatBox : MonoBehaviour {
                 TextZone.text = "Player " + P1.id + " : " + TextZone.text;
             else
                 TextZone.text = "NoName : " + TextZone.text;
-            ChatUpdate(TextZone.text);
+            P1.SenMsg(TextZone.text);
             TextZone.text = "";
         }
         UpdateTextPos();
     }
 
-    void ChatUpdate (string newMsg)
+    public void ChatUpdate (string newMsg)
     {
         Msg = Instantiate(TextPrefab, new Vector3(0, 0, 0), Quaternion.identity);
         Msg.transform.SetParent(ChatZone.transform);

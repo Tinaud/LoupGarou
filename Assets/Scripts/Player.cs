@@ -15,14 +15,17 @@ public class Player : NetworkBehaviour {
     ChatBox CurrentChat;
 
     void Start() {
-        if (true) {
+        if (isLocalPlayer) {
 			id = nextId++;
 			gm = Camera.main.GetComponent<GameManager> ();
             ChatB = Instantiate(ChatPrefab, new Vector3(0, 0, 0), Quaternion.identity);
             ChatB.transform.SetParent(Camera.main.transform);
             CurrentChat = ChatB.GetComponent<ChatBox>();
             CurrentChat.setPlayer(this);
+            NetworkServer.Spawn(ChatB);
+            Debug.Log("Whatever");
         }
+        Debug.Log("Wjhat????");
     }
 
 	public override void OnStartLocalPlayer() {
@@ -32,6 +35,18 @@ public class Player : NetworkBehaviour {
 	public void changeColor(Color c) {
 		GetComponent<MeshRenderer> ().material.color = c;
 	}
+
+    public void SenMsg(string Message)
+    {
+        //Appel server pour l'envoie du message
+        AddMsg(Message);
+    }
+
+    public void AddMsg(string Message)
+    {
+        //Appel su serveur pour l'ajout du message
+        CurrentChat.ChatUpdate(Message);
+    }
 
     void Update() {
 		if (isLocalPlayer) {
@@ -50,12 +65,10 @@ public class Player : NetworkBehaviour {
             if (Physics.Raycast(ray, out hit))
             {
                 Player Pla = hit.transform.gameObject.GetComponent<Player>();
-                if (Pla.id == id)
+                if (Pla.id == id && Pla != null)
                 {
-                    //Resources.Load("enemy")
                     SelectButton = Instantiate((GameObject)Resources.Load("PlayerSelect"), new Vector3(0, 0, 0), Quaternion.identity);
                     SelectButton.transform.SetParent(Camera.main.transform);
-                    //UnityEngine.UI.Button button = GameObject.Find("PlayerButton").GetComponent<UnityEngine.UI.Button>();
                     SelectButton.GetComponentInChildren<Text>().text = "Player " + Pla.id;
                     Debug.Log("Player " + id);
                 }
