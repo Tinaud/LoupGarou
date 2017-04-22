@@ -62,7 +62,7 @@ public class GameManager : MonoBehaviour {
         if (Input.GetKeyDown(KeyCode.Space) && nbrPlayers < 20 && !gameStarted)
             NewPlayer();
 
-        if(Input.GetKeyDown(KeyCode.Return) && nbrPlayers > 5 && !gameStarted)
+        if((Input.GetKeyDown(KeyCode.RightShift) || Input.GetKeyDown(KeyCode.LeftShift)) && nbrPlayers > 5 && !gameStarted)
             StartGame();
 	}
 
@@ -169,6 +169,7 @@ public class GameManager : MonoBehaviour {
 
         //CUPIDON
         if(refCupidon != null) {
+            MessageToPlayers("MJ : Cupidon choisi deux personnes qui tomberont amoureuse");
             refCupidon.GetComponent<BaseRole>().PlayTurn();
             yield return new WaitUntil(() => refCupidon.GetComponent<BaseRole>().IsReady());
         }

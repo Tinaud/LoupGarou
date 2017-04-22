@@ -18,7 +18,7 @@ public class Player : NetworkBehaviour {
     bool yourTurn = true;
 
     void Start() {
-        if (isLocalPlayer) {
+        if (true) {
 			id = nextId++;
 			gm = Camera.main.GetComponent<GameManager> ();
             ChatB = Instantiate(ChatPrefab, new Vector3(0, 0, 0), Quaternion.identity);
