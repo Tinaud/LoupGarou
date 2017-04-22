@@ -5,7 +5,7 @@ using UnityEngine.Networking;
 using UnityEngine.UI;
 
 
-public class ChatBox : NetworkBehaviour
+public class ChatBox : MonoBehaviour
 {
     //public ScrollRect ChatZone;
     public InputField TextZone;
@@ -38,7 +38,7 @@ public class ChatBox : NetworkBehaviour
         if (Input.GetKeyDown(KeyCode.Return) && TextZone.text != "")
         {
             if (P1 != null)
-                TextZone.text = "Player " + P1.id + " : " + TextZone.text;
+                TextZone.text = P1.pseudo + " : " + TextZone.text;
             else
                 TextZone.text = "NoName : " + TextZone.text;
             P1.SenMsg(TextZone.text);

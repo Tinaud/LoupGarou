@@ -13,25 +13,23 @@ public class GameManager : MonoBehaviour {
 
     public List<GameObject> victims = new List<GameObject>();
 
+    public List<string> nom = new List<string>();
+
     int nbrPlayers;
     public List<GameObject> playerList = new List<GameObject>();
     public List<GameObject> refLoups = new List<GameObject>();
     List<string> roles = new List<string>();
 
-    private static GameManager instance;
-    public static GameManager Instance
+    public static GameManager instance = null;
+    void Awake()
     {
-        get 
-        {
-            if (instance == null)
-            {
-                instance = new GameManager();
-            }
-            return instance;
-        }
-    }
+        if (instance == null)
+            instance = this;
+        else if (instance != this)
+            Destroy(gameObject);
 
-    void Start () {
+    }
+        void Start () {
         gameStarted = false;
         player = (GameObject)Resources.Load("Player");
         nbrPlayers = 0;
@@ -42,7 +40,23 @@ public class GameManager : MonoBehaviour {
         refCupidon = null;
 
         AddRoles();
-	}
+        nom.Add("Gillian");
+        nom.Add("Samuel");
+        nom.Add("Mathieu");
+        nom.Add("Sharky");
+        nom.Add("Facyl");
+        nom.Add("Antonio");
+        nom.Add("Olimar");
+        nom.Add("Lynk");
+        nom.Add("Jean-Charles");
+        nom.Add("Fran");
+        nom.Add("Simon");
+        nom.Add("Mage");
+        nom.Add("MegaMan");
+        nom.Add("Catmeoutsy");
+        nom.Add("Howbowdat");
+
+    }
 
     void Update () {
         if (Input.GetKeyDown(KeyCode.Space) && nbrPlayers < 20 && !gameStarted)
