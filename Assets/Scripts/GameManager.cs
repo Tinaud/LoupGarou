@@ -13,18 +13,20 @@ public class GameManager : MonoBehaviour {
 
     public List<GameObject> victims = new List<GameObject>();
 
+    public List<string> nom = new List<string>();
+
     int nbrPlayers;
     public List<GameObject> playerList = new List<GameObject>();
     public List<GameObject> refLoups = new List<GameObject>();
     List<string> roles = new List<string>();
 
-	public static GameManager instance = null;
-	void Awake()
+    public static GameManager instance = null;
+    void Awake()
     {
-		if (instance == null)
-			instance = this;
-		else if (instance != this)
-			Destroy(gameObject); 
+        if (instance == null)
+            instance = this;
+        else if (instance != this)
+            Destroy(gameObject);
     }
 
     void Start () {
@@ -38,13 +40,29 @@ public class GameManager : MonoBehaviour {
         refCupidon = null;
 
         AddRoles();
-	}
+        nom.Add("Gillian");
+        nom.Add("Samuel");
+        nom.Add("Mathieu");
+        nom.Add("Sharky");
+        nom.Add("Facyl");
+        nom.Add("Antonio");
+        nom.Add("Olimar");
+        nom.Add("Lynk");
+        nom.Add("Jean-Charles");
+        nom.Add("Fran");
+        nom.Add("Simon");
+        nom.Add("Mage");
+        nom.Add("MegaMan");
+        nom.Add("Catmeoutsy");
+        nom.Add("Howbowdat");
+
+    }
 
     void Update () {
         if (Input.GetKeyDown(KeyCode.Space) && nbrPlayers < 20 && !gameStarted)
             NewPlayer();
 
-        if(Input.GetKeyDown(KeyCode.Return) && nbrPlayers > 5 && !gameStarted)
+        if((Input.GetKeyDown(KeyCode.RightShift) || Input.GetKeyDown(KeyCode.LeftShift)) && nbrPlayers > 5 && !gameStarted)
             StartGame();
 	}
 
@@ -157,6 +175,7 @@ public class GameManager : MonoBehaviour {
 
         //CUPIDON
         if(refCupidon != null) {
+            MessageToPlayers("MJ : Cupidon choisi deux personnes qui tomberont amoureuse");
             refCupidon.GetComponent<BaseRole>().PlayTurn();
             yield return new WaitUntil(() => refCupidon.GetComponent<BaseRole>().IsReady());
         }

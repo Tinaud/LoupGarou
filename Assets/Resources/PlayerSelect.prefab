@@ -22,6 +22,7 @@ GameObject:
   - component: {fileID: 223416056388723026}
   - component: {fileID: 114399831362617894}
   - component: {fileID: 114251197958324238}
+  - component: {fileID: 65465878987707428}
   m_Layer: 0
   m_Name: PlayerSelect
   m_TagString: Untagged
@@ -64,6 +65,18 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
+--- !u!65 &65465878987707428
+BoxCollider:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1037519626708456}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Size: {x: 156, y: 26, z: 1}
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!114 &114098626945745284
 MonoBehaviour:
   m_ObjectHideFlags: 1

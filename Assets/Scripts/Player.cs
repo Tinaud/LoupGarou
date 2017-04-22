@@ -7,22 +7,29 @@ public class Player : NetworkBehaviour {
 
     static int nextId = 0;
     public int id;
+    public string pseudo;
     GameManager gm;
     Quaternion targetRotation;
     public GameObject ChatPrefab;
     GameObject SelectButton;
     GameObject ChatB;
     ChatBox CurrentChat;
+    Player Pla;
+    bool yourTurn = true;
 
     void Start() {
-        if (isLocalPlayer) {
+		if (isLocalPlayer) {
 			id = nextId++;
 			gm = Camera.main.GetComponent<GameManager> ();
-            ChatB = Instantiate(ChatPrefab, new Vector3(0, 0, 0), Quaternion.identity);
-            ChatB.transform.SetParent(Camera.main.transform);
-            CurrentChat = ChatB.GetComponent<ChatBox>();
-            CurrentChat.setPlayer(this);
-        }
+			ChatB = Instantiate (ChatPrefab, new Vector3 (0, 0, 0), Quaternion.identity);
+			ChatB.transform.SetParent (Camera.main.transform);
+			CurrentChat = ChatB.GetComponent<ChatBox> ();
+			CurrentChat.setPlayer (this);
+			int x = Random.Range (0, GameManager.instance.nom.Count);
+			pseudo = GameManager.instance.nom [x];
+			GameManager.instance.nom.RemoveAt (x);
+		} else
+			changeColor (Color.blue);
     }
 
 	public override void OnStartLocalPlayer() {
@@ -46,31 +53,38 @@ public class Player : NetworkBehaviour {
     }
 
     void Update() {
-		if (isLocalPlayer) {
-			transform.rotation = Quaternion.Slerp (transform.rotation, targetRotation, Time.deltaTime * 2.0f);
-		}
+
+		if (!isLocalPlayer)
+			return;
+
+		transform.rotation = Quaternion.Slerp (transform.rotation, targetRotation, Time.deltaTime * 2.0f);
         //Raycast pour savoir si on a toucher un joueur bon joueur
-        if (Input.GetMouseButtonDown(0))
+        if (Input.GetMouseButtonDown(0) && yourTurn)
         {
-            if (SelectButton != null)
-            {
-                Destroy(SelectButton);
-                SelectButton = null;
-            }
             RaycastHit hit;
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
             if (Physics.Raycast(ray, out hit))
             {
-                Player Pla = hit.transform.gameObject.GetComponent<Player>();
-                if (Pla.id == id && Pla != null)
+                Destroy(SelectButton);
+                SelectButton = null;
+                Pla = hit.transform.gameObject.GetComponent<Player>();
+                if (Pla.id == id && Pla != null && isLocalPlayer)
                 {
                     SelectButton = Instantiate((GameObject)Resources.Load("PlayerSelect"), new Vector3(0, 0, 0), Quaternion.identity);
                     SelectButton.transform.SetParent(Camera.main.transform);
-                    SelectButton.GetComponentInChildren<Text>().text = "Player " + Pla.id;
-                    Debug.Log("Player " + id);
+                    SelectButton.GetComponentInChildren<Text>().text = "Player " + Pla.pseudo;
+                    SelectButton.GetComponentInChildren<Button>().onClick.AddListener(selectionPlayer);
                 }
             }
         }
+    }
+
+    void selectionPlayer()
+    {
+        //envoie de la sélection au serveur
+        Debug.Log("Player " + pseudo + " : is choosen");
+        Destroy(SelectButton);
+        SelectButton = null;
     }
 
     public IEnumerator Vote() {
