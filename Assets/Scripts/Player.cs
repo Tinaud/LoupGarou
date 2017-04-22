@@ -40,7 +40,7 @@ public class Player : NetworkBehaviour {
 
 
     void Start() {
-		if (isLocalPlayer) {
+		if (true) {
 			id = nextId++;
 			gm = Camera.main.GetComponent<GameManager> ();
 			ChatB = Instantiate (ChatPrefab, new Vector3 (0, 0, 0), Quaternion.identity);
@@ -73,7 +73,8 @@ public class Player : NetworkBehaviour {
     public void RpcAddMsg(string Message)
     {
         //Appel su serveur pour l'ajout du message
-        CurrentChat.ChatUpdate(Message);
+        if (true)
+            CurrentChat.ChatUpdate(Message);
     }
 
     void Update() {

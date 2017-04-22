@@ -188,7 +188,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   id: 0
-  ChatPrefab: {fileID: 1856578143665156, guid: dd416d664153ef74db223a0c7641735d, type: 2}
+  pseudo: 
+  ChatPrefab: {fileID: 1615935512887752, guid: dd416d664153ef74db223a0c7641735d, type: 2}
 --- !u!114 &114924059750414842
 MonoBehaviour:
   m_ObjectHideFlags: 1

@@ -184,19 +184,25 @@ public class GameManager : NetworkBehaviour {
         while(gameStarted) {
 
             //VOYANTE
-            if(refVoyante != null) {
+            if(refVoyante != null)
+            {
+                CmdMessageToPlayers("MJ : La voyante choisi une personne pour connaitre son rôle");
                 refVoyante.GetComponent<BaseRole>().PlayTurn();
                 yield return new WaitUntil(() => refVoyante.GetComponent<BaseRole>().IsReady());
             }
 
             //LOUPS
-            if(refLoups.Count > 0) {
+            if(refLoups.Count > 0)
+            {
+                CmdMessageToPlayers("MJ : Les loups choissisent une personnes à tuer");
                 refLoups[0].GetComponent<BaseRole>().PlayTurn();
                 yield return new WaitUntil(() => refLoups[0].GetComponent<BaseRole>().IsReady());
             }
 
             //SORCIÈRE
-            if(refSorciere != null) {
+            if(refSorciere != null)
+            {
+                CmdMessageToPlayers("MJ : La sorcière choisi de sauver ou de tuer une personne");
                 refSorciere.GetComponent<BaseRole>().PlayTurn();
                 yield return new WaitUntil(() => refSorciere.GetComponent<BaseRole>().IsReady());
             }
@@ -204,13 +210,18 @@ public class GameManager : NetworkBehaviour {
             //FIN DE LA NUIT
             if(victims.Count > 0) {
                 foreach(GameObject o in victims)
+                { 
                     o.GetComponent<BaseRole>().Die();
-
+                    CmdMessageToPlayers("MJ : " + o.GetComponent<Player>().pseudo + " est retrouvé mort. C'était : " + o.GetComponent<BaseRole>().GetType());
+                }
                 victims.Clear();
             }
             else
+            {
+                CmdMessageToPlayers("MJ :  Il n'y a aucun mort cette nuit! gg wp.");
                 Debug.Log("{MORT} Il n'y a aucun mort cette nuit! gg wp");
-
+            }
+                
             Debug.Log(playerList.Count + " " + refLoups.Count);
 
             yield return new WaitForSeconds(4f);
