@@ -11,14 +11,24 @@ using System.Text.RegularExpressions;
 
 public class NetworkManager_Custom : NetworkManager {
 
+	// Singleton 
+	public static NetworkManager_Custom custom_singleton = null;
 	void Start() {
-		if (matchMaker == null)
-			StartMatchMaker ();
+		if (custom_singleton == null) {
+			custom_singleton = this;
+		} else if (custom_singleton != this) {
+			Destroy (gameObject); 
+		}
+
+		if (NetworkManager.singleton.matchMaker == null)
+			NetworkManager.singleton.StartMatchMaker ();
 	}
+
 
 	public override void OnServerAddPlayer(NetworkConnection conn, short playerControllerId) {
 		GameObject player = Instantiate (playerPrefab, Vector3.zero, Quaternion.identity) as GameObject;
 		player.GetComponent<Player> ().changeColor (Color.blue);
+		GameManager.instance.AddPlayer (player.gameObject);
 		NetworkServer.AddPlayerForConnection (conn, player, playerControllerId);
 	}
 
@@ -32,49 +42,18 @@ public class NetworkManager_Custom : NetworkManager {
 		bool matchAdvertise = true;
 
 		Debug.Log (matchName + ", " + matchSize + ", " + matchAdvertise);
-		matchMaker.CreateMatch (matchName, matchSize, matchAdvertise, "", "", "", 0, 0, OnMatchCreate);
-	}
-
-	public void GetMatchList() {
-		matchMaker.ListMatches (0, 20, "", true, 0, 0, OnMatchList); 
-	}
-
-	public override void OnMatchList(bool success, string extendedInfo, List<MatchInfoSnapshot> matches)
-	{
-		if (success && matches != null && matches.Count > 0)
-		{
-			GameObject roomListContainer = GameObject.Find ("RoomListContainer");
-			roomListContainer.transform.DetachChildren();
-			GameObject roomListObjT = Instantiate (Resources.Load ("RoomListObj")) as GameObject;
-
-			foreach (MatchInfoSnapshot match in matches) {
-				GameObject roomObj = Instantiate (roomListObjT);
-				roomObj.transform.SetParent (roomListContainer.transform, false);
-
-				Text[] texts = roomObj.GetComponentsInChildren<Text> ();
-				texts [0].text = match.name;
-				texts [1].text = match.currentSize + "/" + match.maxSize;
-
-				roomObj.GetComponentInChildren<Button> ().onClick.AddListener (() => matchMaker.JoinMatch(match.networkId, "", "", "", 0, 0, OnMatchJoined));
-			};
-		}
-		else if (!success)
-		{
-			Debug.LogError("List match failed: " + extendedInfo);
-		}
+		NetworkManager.singleton.matchMaker.CreateMatch (matchName, matchSize, matchAdvertise, "", "", "", 0, 0, NetworkManager.singleton.OnMatchCreate);
 	}
 
 	public void JoinGame ( ) {
+		Debug.Log("Join Game!");
 		NetworkManager.singleton.StartClient ();
 	}
 
-	public void HostGame ( ) {
-		NetworkManager.singleton.StartHost (connectionConfig, 8);
+	public void HostGame ( int maxConn ) {
+		maxConnections = maxConn;
+		NetworkManager.singleton.StartHost(matchInfo);
 	}
 
-	public void OnConnected(NetworkMessage msg)
-	{
-		Debug.Log("Connected!");
-	}
 
 }

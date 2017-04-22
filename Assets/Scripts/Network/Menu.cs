@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.Networking;
 
 public class Menu : MonoBehaviour {
 
@@ -10,6 +11,12 @@ public class Menu : MonoBehaviour {
 
 	public void OnSliderLANOnline() {
 		isLAN = !isLAN;
+		createRoomMenu.GetComponent<CreateRoomMenu> ().OnSliderLANOnline (isLAN);
+		if (isLAN)
+			NetworkManager.singleton.StopMatchMaker ();
+		else
+			NetworkManager.singleton.StartMatchMaker ();
+		
 		Debug.Log (isLAN);
 	}
 
@@ -21,22 +28,20 @@ public class Menu : MonoBehaviour {
 
 
 	public void CreateGameClick () {
-		if (!isLAN) {
-			mainMenu.SetActive (false);
-			createRoomMenu.SetActive (true);
-			joinRoomMenu.SetActive (false);
-		} else {
-			NetworkManager_Custom.singleton.StartHost ();
-		}
+		mainMenu.SetActive (false);
+		createRoomMenu.SetActive (true);
+		joinRoomMenu.SetActive (false);
 	}
+
 
 	public void JoinGameClick () {
 		if (!isLAN) {
 			mainMenu.SetActive (false);
 			createRoomMenu.SetActive (false);
 			joinRoomMenu.SetActive (true);
+			joinRoomMenu.GetComponent<JoinRoomMenu> ().Setup ();
 		} else {
-			NetworkManager_Custom.singleton.StartClient ();
+			NetworkManager_Custom.custom_singleton.JoinGame ();
 		}
 	}
 

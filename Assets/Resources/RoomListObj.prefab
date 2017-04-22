@@ -57,6 +57,7 @@ GameObject:
   - component: {fileID: 222140733658628850}
   - component: {fileID: 114032182433226156}
   - component: {fileID: 114914664173228080}
+  - component: {fileID: 114494797715003574}
   m_Layer: 0
   m_Name: RoomListObj
   m_TagString: Untagged
@@ -267,6 +268,20 @@ MonoBehaviour:
   m_Text: '20/20
 
 '
+--- !u!114 &114494797715003574
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1450058593771188}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9194f99ca86f64d47a17f3e9e1280069, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  roomNameText: {fileID: 114070366757851204}
+  roomSizeText: {fileID: 114331842150569672}
+  joinButton: {fileID: 114163657012332796}
 --- !u!114 &114914664173228080
 MonoBehaviour:
   m_ObjectHideFlags: 1

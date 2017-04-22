@@ -22,10 +22,7 @@ public class Player : NetworkBehaviour {
             ChatB.transform.SetParent(Camera.main.transform);
             CurrentChat = ChatB.GetComponent<ChatBox>();
             CurrentChat.setPlayer(this);
-            NetworkServer.Spawn(ChatB);
-            Debug.Log("Whatever");
         }
-        Debug.Log("Wjhat????");
     }
 
 	public override void OnStartLocalPlayer() {

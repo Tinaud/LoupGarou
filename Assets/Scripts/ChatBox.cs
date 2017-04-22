@@ -1,11 +1,10 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Networking;
 using UnityEngine.UI;
 
 
-public class ChatBox : NetworkBehaviour
+public class ChatBox : MonoBehaviour
 {
     //public ScrollRect ChatZone;
     public InputField TextZone;

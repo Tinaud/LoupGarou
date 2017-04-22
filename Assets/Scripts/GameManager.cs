@@ -18,17 +18,13 @@ public class GameManager : MonoBehaviour {
     public List<GameObject> refLoups = new List<GameObject>();
     List<string> roles = new List<string>();
 
-    private static GameManager instance;
-    public static GameManager Instance
+	public static GameManager instance = null;
+	void Awake()
     {
-        get 
-        {
-            if (instance == null)
-            {
-                instance = new GameManager();
-            }
-            return instance;
-        }
+		if (instance == null)
+			instance = this;
+		else if (instance != this)
+			Destroy(gameObject); 
     }
 
     void Start () {
@@ -106,6 +102,12 @@ public class GameManager : MonoBehaviour {
         playerList.Add(g);
         RearrangePlayers();
     }
+
+	public void AddPlayer(GameObject p) {
+		nbrPlayers++;
+		playerList.Add(p);
+		RearrangePlayers();
+	}
 
     void RearrangePlayers() {
         float angle = 0.0f;
