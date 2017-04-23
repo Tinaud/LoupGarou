@@ -5,69 +5,109 @@ using UnityEngine.Networking;
 
 public class GameManager : NetworkBehaviour {
 
+	public struct PlayerInfo {
+		public Player playerRef;
+		public NetworkInstanceId netId;
+
+		public PlayerInfo(NetworkInstanceId _netId,  Player _p) {
+			netId = _netId;
+			playerRef = _p;
+		}
+
+		public override string ToString ()
+		{
+			return playerRef.pseudo + " (" + netId + ") ";
+		}
+	}
+
+	[SyncVar]
     bool gameStarted;
-    GameObject player,
-               refVoyante,
-               refChasseur,
-               refCupidon,
-               refSorciere;
 
-    public List<GameObject> victims = new List<GameObject>();
+	[SyncVar]
+	PlayerInfo refVoyante;
+	[SyncVar]
+	PlayerInfo refChasseur;
+	[SyncVar]
+	PlayerInfo refCupidon;
+	[SyncVar]
+	PlayerInfo refSorciere;
 
-    public List<string> nom = new List<string>();
 
+
+	public class SyncListPlayer : SyncListStruct<PlayerInfo> {} 
+
+	void PlayerChanged(SyncListPlayer.Operation op, int itemIndex)
+	{
+		Debug.Log("player changed: " + op);
+	}
+
+
+
+
+
+	[SyncVar]
     int nbrPlayers;
-    public List<GameObject> playerList = new List<GameObject>();
-    public List<GameObject> refLoups = new List<GameObject>();
-    List<string> roles = new List<string>();
+
+	public SyncListPlayer playersList = new SyncListPlayer();
+	public SyncListPlayer wolvesList = new SyncListPlayer();
+	public SyncListPlayer victimsList = new SyncListPlayer();
+
+	public SyncListString nom = new SyncListString();
+	SyncListString roles = new SyncListString();
 
     public static GameManager instance = null;
     void Awake()
-    {
-        if (instance == null)
-            instance = this;
-        else if (instance != this)
-            Destroy(gameObject);
+	{
+		if (instance == null)
+			instance = this;
+		else if (instance != this)
+			Destroy (gameObject);
+
+		DontDestroyOnLoad (gameObject);
     }
 
-    void Start () {
-        gameStarted = false;
-        player = (GameObject)Resources.Load("Player");
-        nbrPlayers = 0;
+	public override void OnStartServer () {
+		
+		gameStarted = false;
+		nbrPlayers = 0;
 
-        refVoyante = null;
-        refChasseur = null;
-        refSorciere = null;
-        refCupidon = null;
+		refVoyante = new PlayerInfo ();
+		refChasseur = new PlayerInfo ();
+		refSorciere = new PlayerInfo ();
+		refCupidon = new PlayerInfo ();
 
-        AddRoles();
-        nom.Add("Gillian");
-        nom.Add("Samuel");
-        nom.Add("Mathieu");
-        nom.Add("Sharky");
-        nom.Add("Facyl");
-        nom.Add("Antonio");
-        nom.Add("Olimar");
-        nom.Add("Lynk");
-        nom.Add("Jean-Charles");
-        nom.Add("Fran");
-        nom.Add("Simon");
-        nom.Add("Mage");
-        nom.Add("MegaMan");
-        nom.Add("Catmeoutsy");
-        nom.Add("Howbowdat");
+		AddRoles();
+		nom.Add("Gillian");
+		nom.Add("Samuel");
+		nom.Add("Mathieu");
+		nom.Add("Sharky");
+		nom.Add("Facyl");
+		nom.Add("Antonio");
+		nom.Add("Olimar");
+		nom.Add("Lynk");
+		nom.Add("Jean-Charles");
+		nom.Add("Fran");
+		nom.Add("Simon");
+		nom.Add("Mage");
+		nom.Add("MegaMan");
+		nom.Add("Catmeoutsy");
+		nom.Add("Howbowdat");
 
+		playersList.Callback = PlayerChanged;
+		wolvesList.Callback = PlayerChanged;
+		victimsList.Callback = PlayerChanged;
     }
 
     void Update () {
-        if (Input.GetKeyDown(KeyCode.Space) && nbrPlayers < 20 && !gameStarted)
-            NewPlayer();
+        /*if (Input.GetKeyDown(KeyCode.Space) && nbrPlayers < 20 && !gameStarted)
+            NewPlayer();*/
 
         if((Input.GetKeyDown(KeyCode.RightShift) || Input.GetKeyDown(KeyCode.LeftShift)) && nbrPlayers > 5 && !gameStarted)
-            StartGame();
+			CmdStartGame();
 	}
 
-    void StartGame() {
+	[Command]
+    void CmdStartGame() {
         gameStarted = true;
 
         float wolfNumber = Mathf.Floor(nbrPlayers / 3.0f);
@@ -77,32 +117,32 @@ public class GameManager : NetworkBehaviour {
         for (int i = roles.Count; i < nbrPlayers; i++)
             roles.Add("Villageois");
 
-        foreach (GameObject g in playerList) {
+		foreach (PlayerInfo g in playersList) {
             int r = Random.Range(0, roles.Count);
 
             switch (roles[r]) {
                 case "Villageois":
-                    g.AddComponent<Villageois>();
+                    g.playerRef.gameObject.AddComponent<Villageois>();
                     break;
                 case "Loup-Garou":
-                    g.AddComponent<Loup>();
-                    refLoups.Add(g);
+					g.playerRef.gameObject.AddComponent<Loup>();
+					wolvesList.Add(g);
                     break;
                 case "Sorcière":
-                    g.AddComponent<Sorciere>();
-                    refSorciere = g;
+					g.playerRef.gameObject.AddComponent<Sorciere>();
+					refSorciere = g;
                     break;
                 case "Cupidon":
-                    g.AddComponent<Cupidon>();
-                    refCupidon = g;
+					g.playerRef.gameObject.AddComponent<Cupidon>();
+					refCupidon = g;
                     break;
                 case "Chasseur":
-                    g.AddComponent<Chasseur>();
-                    refChasseur = g;
+					g.playerRef.gameObject.AddComponent<Chasseur>();
+					refChasseur = g;
                     break;
                 case "Voyante":
-                    g.AddComponent<Voyante>();
-                    refVoyante = g;
+					g.playerRef.gameObject.AddComponent<Voyante>();
+					refVoyante = g;
                     break;
                 default:
                     Debug.Log("Unknown role :(");
@@ -115,31 +155,37 @@ public class GameManager : NetworkBehaviour {
         StartCoroutine(GameTurn());
     }
 
-    public void NewPlayer() {
+    /*public void NewPlayer() {
         nbrPlayers++;
         GameObject g = Instantiate(player, new Vector3(0, 0, 0), Quaternion.identity);
         playerList.Add(g);
         RearrangePlayers();
-    }
+    }*/
 
-	public void AddPlayer(GameObject p) {
+	public void AddPlayer(GameObject _p) {
+
+		PlayerInfo pInfo = new PlayerInfo ();
+		pInfo.playerRef = _p.GetComponent<Player> ();
+		pInfo.netId = _p.GetComponent<NetworkIdentity> ().netId;
+
+		playersList.Add(pInfo);
 		nbrPlayers++;
-		playerList.Add(p);
+
 		RearrangePlayers();
 	}
 
     void RearrangePlayers() {
         float angle = 0.0f;
 
-        foreach(GameObject g in playerList) {
+		foreach(PlayerInfo g in playersList) {
             Vector3 pos = new Vector3(10 * Mathf.Cos(angle), 0, 10 * Mathf.Sin(angle));
             Vector3 relativePos = Vector3.zero - pos;
             Quaternion rotation = Quaternion.LookRotation(relativePos);
             
-            g.transform.position = pos;
-            g.transform.rotation = rotation;
+            g.playerRef.transform.position = pos;
+			g.playerRef.transform.rotation = rotation;
 
-            angle += (2 * Mathf.PI) / playerList.Count;
+            angle += (2 * Mathf.PI) / playersList.Count;
         }
     }
 
@@ -150,24 +196,40 @@ public class GameManager : NetworkBehaviour {
         roles.Add("Chasseur");
     }
 
-    public List<GameObject> GetPlayers() {
-        return playerList;
+	public List<GameObject> GetPlayers() {
+		List<GameObject> _playerList = new List<GameObject> ();
+
+		foreach (PlayerInfo _p in playersList)
+			_playerList.Add (_p.playerRef.gameObject);
+
+		return _playerList;
     }
 
     public bool IsStarted() {
         return gameStarted;
     }
 
-    public void RemoveWolf(GameObject o) {
-        refLoups.Remove(o);
+	[Command]
+	public void CmdRemoveWolf(GameObject _w) {
+		PlayerInfo pInfo = new PlayerInfo ();
+		pInfo.playerRef = _w.GetComponent<Player> ();
+		pInfo.netId = _w.GetComponent<NetworkIdentity> ().netId;
+
+		wolvesList.Remove(pInfo);
     }
 
-    public void AddVictim(GameObject o) {
-        victims.Add(o);
+	[Command]
+	public void CmdAddVictim(GameObject _v) {
+		PlayerInfo pInfo = new PlayerInfo ();
+		pInfo.playerRef = _v.GetComponent<Player> ();
+		pInfo.netId = _v.GetComponent<NetworkIdentity> ().netId;
+
+		victimsList.Add(pInfo);
     }
 
-    public void SaveVictim() {
-        victims.Clear();
+	[Command]
+    public void CmdSaveVictim() {
+		victimsList.Clear();
     }
 
     IEnumerator GameTurn() {
@@ -175,74 +237,78 @@ public class GameManager : NetworkBehaviour {
         yield return new WaitForSeconds(2f);
 
         //CUPIDON
-        if(refCupidon != null) {
-            CmdMessageToPlayers("MJ : Cupidon choisi deux personnes qui tomberont amoureuse");
-            refCupidon.GetComponent<BaseRole>().PlayTurn();
-            yield return new WaitUntil(() => refCupidon.GetComponent<BaseRole>().IsReady());
+		if(refCupidon.playerRef != null) {
+            MessageToPlayers("MJ : Cupidon choisi deux personnes qui tomberont amoureuse");
+			BaseRole _refCupidon = refCupidon.playerRef.GetComponent<BaseRole>();
+			_refCupidon.PlayTurn();
+			yield return new WaitUntil(() => _refCupidon.IsReady());
         }
 
         while(gameStarted) {
 
             //VOYANTE
-            if(refVoyante != null)
+			if(refVoyante.playerRef != null)
             {
-                CmdMessageToPlayers("MJ : La voyante choisi une personne pour connaitre son rôle");
-                refVoyante.GetComponent<BaseRole>().PlayTurn();
-                yield return new WaitUntil(() => refVoyante.GetComponent<BaseRole>().IsReady());
+                MessageToPlayers("MJ : La voyante choisi une personne pour connaitre son rôle");
+				BaseRole _refVoyante = refVoyante.playerRef.GetComponent<BaseRole>();
+				_refVoyante.PlayTurn();
+				yield return new WaitUntil(() => _refVoyante.IsReady());
             }
 
             //LOUPS
-            if(refLoups.Count > 0)
+			if(wolvesList.Count > 0)
             {
-                CmdMessageToPlayers("MJ : Les loups choissisent une personnes à tuer");
-                refLoups[0].GetComponent<BaseRole>().PlayTurn();
-                yield return new WaitUntil(() => refLoups[0].GetComponent<BaseRole>().IsReady());
+                MessageToPlayers("MJ : Les loups choissisent une personnes à tuer");
+				BaseRole _refWolf = wolvesList[0].playerRef.GetComponent<BaseRole>();
+				_refWolf.PlayTurn();
+				yield return new WaitUntil(() => _refWolf.IsReady());
             }
 
             //SORCIÈRE
-            if(refSorciere != null)
+			if(refSorciere.playerRef != null)
             {
-                CmdMessageToPlayers("MJ : La sorcière choisi de sauver ou de tuer une personne");
-                refSorciere.GetComponent<BaseRole>().PlayTurn();
-                yield return new WaitUntil(() => refSorciere.GetComponent<BaseRole>().IsReady());
+                MessageToPlayers("MJ : La sorcière choisi de sauver ou de tuer une personne");
+				BaseRole _refSorciere = refSorciere.playerRef.GetComponent<BaseRole>();
+				_refSorciere.PlayTurn();
+				yield return new WaitUntil(() => _refSorciere.IsReady());
             }
 
             //FIN DE LA NUIT
-            if(victims.Count > 0) {
-                foreach(GameObject o in victims)
+			if(victimsList.Count > 0) {
+				foreach(PlayerInfo v in victimsList)
                 { 
-                    o.GetComponent<BaseRole>().Die();
-                    CmdMessageToPlayers("MJ : " + o.GetComponent<Player>().pseudo + " est retrouvé mort. C'était : " + o.GetComponent<BaseRole>().GetType());
+					BaseRole _refVictim = v.playerRef.GetComponent<BaseRole>();
+					_refVictim.Die();
+					MessageToPlayers("MJ : " + v.playerRef.pseudo + " est retrouvé mort. C'était : " + _refVictim.GetType());
                 }
-                victims.Clear();
+				victimsList.Clear();
             }
             else
             {
-                CmdMessageToPlayers("MJ :  Il n'y a aucun mort cette nuit! gg wp.");
+                MessageToPlayers("MJ :  Il n'y a aucun mort cette nuit! gg wp.");
                 Debug.Log("{MORT} Il n'y a aucun mort cette nuit! gg wp");
             }
                 
-            Debug.Log(playerList.Count + " " + refLoups.Count);
+            Debug.Log(playersList.Count + " " + wolvesList.Count);
 
             yield return new WaitForSeconds(4f);
             
-            if (refLoups.Count <= 0) {
+			if (wolvesList.Count <= 0) {
                 Debug.Log("VILLAGEOIS GAGNENT!");
                 gameStarted = false;
             }
-            else if(playerList.Count == refLoups.Count) {
+			else if(playersList.Count == wolvesList.Count) {
                 Debug.Log("LOUPS GAGNENT!");
                 gameStarted = false;
             } 
         }
     }
-
-	[Command]
-    public void CmdMessageToPlayers(string Msg)
-    {
-        foreach (GameObject pla in playerList)
+		
+    public void MessageToPlayers(string Msg)
+	{
+		foreach (PlayerInfo p in playersList)
         {
-            pla.GetComponent<Player>().RpcAddMsg(Msg);
+			p.playerRef.RpcAddMsg(Msg);
         }
     }
 }

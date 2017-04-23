@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.Networking;
 
-
-public class ChatBox : MonoBehaviour
+public class ChatBox : NetworkBehaviour
 {
     //public ScrollRect ChatZone;
     public InputField TextZone;
@@ -40,7 +40,7 @@ public class ChatBox : MonoBehaviour
                 TextZone.text = P1.pseudo + " : " + TextZone.text;
             else
                 TextZone.text = "NoName : " + TextZone.text;
-			P1.SendChatMessage(TextZone.text);
+			P1.CmdSendMsg(TextZone.text);
             TextZone.text = "";
         }
         UpdateTextPos();

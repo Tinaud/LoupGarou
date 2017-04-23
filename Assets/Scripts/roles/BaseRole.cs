@@ -26,7 +26,7 @@ abstract public class BaseRole : MonoBehaviour {
         }
 
         if (GetComponent<Loup>())
-            Camera.main.GetComponent<GameManager>().RemoveWolf(gameObject);
+			Camera.main.GetComponent<GameManager>().CmdRemoveWolf(gameObject);
 
         players.Remove(gameObject);
         Destroy(gameObject);

@@ -209,6 +209,7 @@ GameObject:
   - component: {fileID: 114565320533150756}
   - component: {fileID: 114436008436521116}
   - component: {fileID: 114633661385714196}
+  - component: {fileID: 114911093785681836}
   m_Layer: 0
   m_Name: ChatBox
   m_TagString: Untagged
@@ -777,6 +778,38 @@ MonoBehaviour:
   m_FillAmount: 1
   m_FillClockwise: 1
   m_FillOrigin: 0
+--- !u!114 &114911093785681836
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1615935512887752}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 372142912, guid: dc443db3e92b4983b9738c1131f555cb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_SceneId:
+    m_Value: 0
+  m_AssetId:
+    i0: 221
+    i1: 65
+    i2: 109
+    i3: 102
+    i4: 65
+    i5: 83
+    i6: 239
+    i7: 116
+    i8: 219
+    i9: 34
+    i10: 58
+    i11: 12
+    i12: 118
+    i13: 65
+    i14: 115
+    i15: 93
+  m_ServerOnly: 0
+  m_LocalPlayerAuthority: 1
 --- !u!114 &114927205955089444
 MonoBehaviour:
   m_ObjectHideFlags: 1

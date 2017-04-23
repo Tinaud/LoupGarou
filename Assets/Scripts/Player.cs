@@ -6,7 +6,7 @@ using UnityEngine.UI;
 
 public class Player : NetworkBehaviour {
 
-	const short CHAT_MESSAGE = 1002;
+	/*const short CHAT_MESSAGE = 1002;
 
 	class ChatMessage : MessageBase {
 		public string message;
@@ -23,12 +23,17 @@ public class Player : NetworkBehaviour {
 		ChatMessage msg = netMsg.ReadMessage<ChatMessage>();
 		Debug.Log ("Receiving... " + msg.message);
 		CurrentChat.ChatUpdate(msg.message);
-	}
-
+	}*/
     static int nextId = 0;
+
+	[SyncVar]
     public int id;
+
+	[SyncVar]
     public string pseudo;
-    GameManager gm;
+
+	GameManager gameManager;
+
     Quaternion targetRotation;
     public GameObject ChatPrefab;
     GameObject SelectButton;
@@ -38,42 +43,53 @@ public class Player : NetworkBehaviour {
     Player Pla;
     bool yourTurn = true;
 
+	public override void OnStartLocalPlayer()
+	{
+		
+		CmdSetup ();
+
+		changeColor (Color.red);
+
+		ChatB = Instantiate (ChatPrefab, new Vector3 (0, 0, 0), Quaternion.identity);
+		ChatB.transform.SetParent (Camera.main.transform);
+		CurrentChat = ChatB.GetComponent<ChatBox> ();
+		CurrentChat.setPlayer (this);
+
+		Debug.Log("Lalala");
+
+	}
+
+
+
+	[Command]
+	void CmdSetup() {
+		id = nextId++;
+		gameManager = GameObject.Find("GameManager").GetComponent<GameManager>();
+		int x = Random.Range (0, gameManager.nom.Count);
+		pseudo = gameManager.nom [x];
+		gameManager.nom.RemoveAt (x);
+	}
 
     void Start() {
-		if (true) {
-			id = nextId++;
-			gm = Camera.main.GetComponent<GameManager> ();
-			ChatB = Instantiate (ChatPrefab, new Vector3 (0, 0, 0), Quaternion.identity);
-			ChatB.transform.SetParent (Camera.main.transform);
-			CurrentChat = ChatB.GetComponent<ChatBox> ();
-			CurrentChat.setPlayer (this);
-			int x = Random.Range (0, GameManager.instance.nom.Count);
-			pseudo = GameManager.instance.nom [x];
-			GameManager.instance.nom.RemoveAt (x);
-		} else
-			changeColor (Color.blue);
+		
     }
-
-	public override void OnStartLocalPlayer() {
-		changeColor (Color.red);
-	}
 		
 	public void changeColor(Color c) {
 		GetComponent<MeshRenderer> ().material.color = c;
 	}
 
 	[Command]
-    public void CmdSenMsg(string Message)
+    public void CmdSendMsg(string Message)
     {
         //Appel server pour l'envoie du message
-        RpcAddMsg(Message);
+		gameManager.MessageToPlayers(Message);
     }
-
+		
 	[ClientRpc]
     public void RpcAddMsg(string Message)
     {
         //Appel su serveur pour l'ajout du message
-        if (true)
+		if (isLocalPlayer)
             CurrentChat.ChatUpdate(Message);
     }
 
@@ -116,11 +132,11 @@ public class Player : NetworkBehaviour {
         while(true) {
             yield return new WaitForSeconds(Random.Range(2.0f, 4.0f));
 
-            GameObject playerToVote;
+			GameObject playerToVote;
 
             do
-                playerToVote = gm.GetPlayers()[Random.Range(0, gm.GetPlayers().Count)];
-            while (id == playerToVote.GetComponent<Player>().ID());
+				playerToVote = gameManager.GetPlayers()[Random.Range(0, gameManager.GetPlayers().Count)];
+			while (id == playerToVote.GetComponent<Player>().ID());
 
             Vector3 relativePos = playerToVote.transform.position - transform.position;
             targetRotation = Quaternion.LookRotation(relativePos);
