@@ -11,13 +11,13 @@ public class JoinRoomMenu : MonoBehaviour {
 	NetworkManager networkManager;
 
 	[SerializeField]
-	private Text status;
+	private Text status = null;
 
 	[SerializeField]
-	private GameObject roomListItemPrefab;
+	private GameObject roomListItemPrefab = null;
 
 	[SerializeField]
-	private Transform roomListParent;
+	private Transform roomListParent = null;
 
 	// Use this for initialization
 	public void Setup () {

@@ -10,13 +10,13 @@ public class RoomListItem : MonoBehaviour {
 	private JoinRoomDelegate joinRoomCallback;
 
 	[SerializeField]
-	private Text roomNameText;
+	private Text roomNameText = null;
 
 	[SerializeField]
-	private Text roomSizeText;
+	private Text roomSizeText = null;
 
 	[SerializeField]
-	private Button joinButton;
+	private Button joinButton = null;
 
 	private MatchInfoSnapshot match;
 

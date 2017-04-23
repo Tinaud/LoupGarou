@@ -10,6 +10,9 @@ public class Player : NetworkBehaviour {
 	GameObject ChatBoxPrefab = null;
 
 	[SerializeField]
+	GameObject Capsule = null;
+
+	[SerializeField]
 	Camera PlayerCamera = null;
 
     static int nextId = 0;
@@ -35,11 +38,7 @@ public class Player : NetworkBehaviour {
 	public override void OnStartLocalPlayer() {
 
 		changeColor (Color.red);
-
-		gameObject.AddComponent<MouseLook> ();
-		GetComponent<MouseLook> ().axes = MouseLook.RotationAxes.MouseX;
-		GetComponent<MouseLook> ().sensitivityX = 5;
-
+		CmdSetup ();
 		GameObject ChatB = Instantiate (ChatBoxPrefab, new Vector3 (0, 0, 0), Quaternion.identity);
 		ChatB.transform.SetParent (PlayerCamera.transform);
 		CurrentChat = ChatB.GetComponent<ChatBox> ();
@@ -49,7 +48,7 @@ public class Player : NetworkBehaviour {
 	}
 
 	public override void OnStartClient() {
-		CmdSetup ();
+		
 	}
 
 	[Command]
@@ -70,12 +69,14 @@ public class Player : NetworkBehaviour {
     }
 
     void Start() {
-		if (!isLocalPlayer)
+		if (!isLocalPlayer) {
 			PlayerCamera.enabled = false;
+			Capsule.GetComponent<MouseLook> ().enabled = false;
+		}
     }
 		
 	public void changeColor(Color c) {
-		GetComponent<MeshRenderer> ().material.color = c;
+		Capsule.GetComponent<MeshRenderer> ().material.color = c;
 	}
 
 	[Command]
@@ -100,7 +101,7 @@ public class Player : NetworkBehaviour {
 
 		transform.rotation = Quaternion.Slerp (transform.rotation, targetRotation, Time.deltaTime * 2.0f);
         //Raycast pour savoir si on a toucher un joueur bon joueur
-        if (Input.GetMouseButtonDown(0) && yourTurn)
+		if (Input.GetMouseButtonDown(0))//&& yourTurn)
         {
             RaycastHit hit;
 			//Ray ray = PlayerCamera.ScreenPointToRay(Input.mousePosition);
@@ -108,9 +109,9 @@ public class Player : NetworkBehaviour {
             {
                 Destroy(SelectButton);
                 SelectButton = null;
-                Pla = hit.transform.gameObject.GetComponent<Player>();
+				Pla = hit.transform.gameObject.GetComponentInParent<Player>();
 				if (Pla != null) {
-					if (Pla.id != id && yourTurn) {
+					if (Pla.id != id) {
 						SelectButton = Instantiate ((GameObject)Resources.Load ("PlayerSelect"), new Vector3 (0, 0, 0), Quaternion.identity);
 						SelectButton.transform.SetParent (PlayerCamera.transform);
 						SelectButton.GetComponentInChildren<Text> ().text = "Player " + Pla.pseudo;
