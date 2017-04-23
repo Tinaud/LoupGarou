@@ -43,10 +43,9 @@ public class Player : NetworkBehaviour {
     Player Pla;
     bool yourTurn = true;
 
-	public override void OnStartLocalPlayer()
-	{
+	public override void OnStartLocalPlayer() {
 		
-		CmdSetup ();
+
 
 		changeColor (Color.red);
 
@@ -54,20 +53,23 @@ public class Player : NetworkBehaviour {
 		ChatB.transform.SetParent (Camera.main.transform);
 		CurrentChat = ChatB.GetComponent<ChatBox> ();
 		CurrentChat.setPlayer (this);
-
-		Debug.Log("Lalala");
-
 	}
 
-
+	public override void OnStartClient() {
+		Debug.Log ("hello");
+		CmdSetup ();
+	}
 
 	[Command]
 	void CmdSetup() {
 		id = nextId++;
-		gameManager = GameObject.Find("GameManager").GetComponent<GameManager>();
+		gameManager = GameManager.instance;
+
 		int x = Random.Range (0, gameManager.nom.Count);
 		pseudo = gameManager.nom [x];
 		gameManager.nom.RemoveAt (x);
+
+		gameManager.AddPlayer (gameObject);
 	}
 
     void Start() {

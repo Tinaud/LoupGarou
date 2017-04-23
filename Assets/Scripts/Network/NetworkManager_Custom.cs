@@ -10,10 +10,7 @@ using UnityEngine.UI;
 using System.Text.RegularExpressions;
 
 public class NetworkManager_Custom : NetworkManager {
-
-	public GameObject gameManager;
-
-	// Singleton 
+		// Singleton 
 	public static NetworkManager_Custom custom_singleton = null;
 	void Start() {
 		if (custom_singleton == null) {
@@ -29,8 +26,6 @@ public class NetworkManager_Custom : NetworkManager {
 
 	public override void OnServerAddPlayer(NetworkConnection conn, short playerControllerId) {
 		GameObject playerGO = Instantiate (playerPrefab, Vector3.zero, Quaternion.identity) as GameObject;
-	
-		gameManager.GetComponent<GameManager>().AddPlayer (playerGO);
 
 		NetworkServer.AddPlayerForConnection (conn, playerGO, playerControllerId);
 	}
