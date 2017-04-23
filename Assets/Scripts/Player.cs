@@ -39,6 +39,7 @@ public class Player : NetworkBehaviour {
 
 		changeColor (Color.red);
 		CmdSetup ();
+
 		GameObject ChatB = Instantiate (ChatBoxPrefab, new Vector3 (0, 0, 0), Quaternion.identity);
 		ChatB.transform.SetParent (PlayerCamera.transform);
 		CurrentChat = ChatB.GetComponent<ChatBox> ();
@@ -63,8 +64,12 @@ public class Player : NetworkBehaviour {
 		gameManager.AddPlayer (gameObject);
 	}
 
-    public void UpdateChatB(string role)
+    [ClientRpc]
+    public void RpcUpdateChatB(string role)
     {
+        if (!isLocalPlayer)
+            return;
+        Debug.Log("Nouveau : " + role);
         GameObject.Find("Role").GetComponent<Text>().text = role;
     }
 
@@ -74,10 +79,25 @@ public class Player : NetworkBehaviour {
 			Capsule.GetComponent<MouseLook> ().enabled = false;
 		}
     }
-		
-	public void changeColor(Color c) {
-		Capsule.GetComponent<MeshRenderer> ().material.color = c;
+
+    [ClientRpc]
+    public void RpcChangeColor(Color c)
+    {
+        /*if (!isLocalPlayer)
+            return;*/
+        GetComponent<MeshRenderer> ().material.color = c;
 	}
+
+    [Command]
+    public void CmdVictims(GameObject selectedPlayer)
+    {
+        if (!isLocalPlayer)
+            return;
+        //Appel server pour l'envoie de la victime
+        gameManager.AddVictim(selectedPlayer);
+    }
+
+
 
 	[Command]
     public void CmdSendMsg(string Message)

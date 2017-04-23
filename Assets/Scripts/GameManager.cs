@@ -70,12 +70,10 @@ public class GameManager : NetworkBehaviour {
 		
 		gameStarted = false;
 		nbrPlayers = 0;
-
 		if (NetworkManager.singleton.matchMaker != null)
 			nbrPlayersMax = NetworkManager.singleton.matchSize;
 		else
 			nbrPlayersMax = (uint)NetworkManager.singleton.maxConnections;
-
 
 		refVoyante = new PlayerInfo ();
 		refChasseur = new PlayerInfo ();
@@ -130,31 +128,31 @@ public class GameManager : NetworkBehaviour {
             switch (roles[r]) {
                 case "Villageois":
                     g.playerRef.gameObject.AddComponent<Villageois>();
-                    g.playerRef.UpdateChatB("Villageois");
+                    g.playerRef.RpcUpdateChatB("Villageois");
                     break;
                 case "Loup-Garou":
 					g.playerRef.gameObject.AddComponent<Loup>();
-                    g.playerRef.UpdateChatB("Loup");
+                    g.playerRef.RpcUpdateChatB("Loup");
                     wolvesList.Add(g);
                     break;
                 case "Sorcière":
 					g.playerRef.gameObject.AddComponent<Sorciere>();
-                    g.playerRef.UpdateChatB("Sorciere");
+                    g.playerRef.RpcUpdateChatB("Sorciere");
                     refSorciere = g;
                     break;
                 case "Cupidon":
 					g.playerRef.gameObject.AddComponent<Cupidon>();
-                    g.playerRef.UpdateChatB("Cupidon");
+                    g.playerRef.RpcUpdateChatB("Cupidon");
                     refCupidon = g;
                     break;
                 case "Chasseur":
 					g.playerRef.gameObject.AddComponent<Chasseur>();
-                    g.playerRef.UpdateChatB("Chasseur");
+                    g.playerRef.RpcUpdateChatB("Chasseur");
                     refChasseur = g;
                     break;
                 case "Voyante":
 					g.playerRef.gameObject.AddComponent<Voyante>();
-                    g.playerRef.UpdateChatB("Voyante");
+                    g.playerRef.RpcUpdateChatB("Voyante");
                     refVoyante = g;
                     break;
                 default:
@@ -239,8 +237,7 @@ public class GameManager : NetworkBehaviour {
 		wolvesList.Remove(pInfo);
     }
 
-	[Command]
-	public void CmdAddVictim(GameObject _v) {
+    public void AddVictim(GameObject _v) {
 		PlayerInfo pInfo = new PlayerInfo ();
 		pInfo.playerRef = _v.GetComponent<Player> ();
 		pInfo.netId = _v.GetComponent<NetworkIdentity> ().netId;
@@ -308,7 +305,8 @@ public class GameManager : NetworkBehaviour {
 					_refVictim.Die();
 					MessageToPlayers("MJ : " + v.playerRef.pseudo + " est retrouvé mort. C'était : " + _refVictim.GetType());
                 }
-				victimsList.Clear();
+                if (victimsList != null)
+				    victimsList.Clear();
             }
             else
             {
