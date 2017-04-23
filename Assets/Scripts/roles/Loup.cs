@@ -17,7 +17,7 @@ public class Loup : BaseRole {
         while (players[rand].GetComponent<Loup>());
 
         selectedPlayer = players[rand];
-        GameManager.instance.CmdAddVictim(selectedPlayer);
+        GetComponent<Player>().CmdVictims(selectedPlayer);
 
         ready = true;
     }

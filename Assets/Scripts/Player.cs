@@ -46,10 +46,10 @@ public class Player : NetworkBehaviour {
     public bool yourTurn = false;
 
 	public override void OnStartLocalPlayer() {
-		
 
 
-		changeColor (Color.red);
+
+        GetComponent<MeshRenderer>().material.color = Color.red;
 
 		ChatB = Instantiate (ChatPrefab, new Vector3 (0, 0, 0), Quaternion.identity);
 		ChatB.transform.SetParent (Camera.main.transform);
@@ -74,18 +74,37 @@ public class Player : NetworkBehaviour {
 		gameManager.AddPlayer (gameObject);
 	}
 
-    public void UpdateChatB(string role)
+    [ClientRpc]
+    public void RpcUpdateChatB(string role)
     {
+        if (!isLocalPlayer)
+            return;
+        Debug.Log("Nouveau : " + role);
         GameObject.Find("Role").GetComponent<Text>().text = role;
     }
 
     void Start() {
 		
     }
-		
-	public void changeColor(Color c) {
-		GetComponent<MeshRenderer> ().material.color = c;
+
+    [ClientRpc]
+    public void RpcChangeColor(Color c)
+    {
+        /*if (!isLocalPlayer)
+            return;*/
+        GetComponent<MeshRenderer> ().material.color = c;
 	}
+
+    [Command]
+    public void CmdVictims(GameObject selectedPlayer)
+    {
+        if (!isLocalPlayer)
+            return;
+        //Appel server pour l'envoie de la victime
+        gameManager.AddVictim(selectedPlayer);
+    }
+
+
 
 	[Command]
     public void CmdSendMsg(string Message)

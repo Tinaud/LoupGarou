@@ -27,9 +27,9 @@ abstract public class BaseRole : MonoBehaviour {
 
         if (GetComponent<Loup>())
             GameManager.instance.CmdRemoveWolf(gameObject);
-
+        GetComponent<Player>().RpcChangeColor(Color.black);
         players.Remove(gameObject);
-        Destroy(gameObject);
+        /*Destroy(gameObject);*/
     }
 
     public bool IsReady() {
