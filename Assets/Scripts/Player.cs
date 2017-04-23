@@ -28,7 +28,9 @@ public class Player : NetworkBehaviour {
 	ChatBox CurrentChat;
 
     Player Pla;
-    bool yourTurn = true;
+
+    [SyncVar]
+    public bool yourTurn = false;
 
 	public override void OnStartLocalPlayer() {
 
@@ -61,6 +63,11 @@ public class Player : NetworkBehaviour {
 
 		gameManager.AddPlayer (gameObject);
 	}
+
+    public void UpdateChatB(string role)
+    {
+        GameObject.Find("Role").GetComponent<Text>().text = role;
+    }
 
     void Start() {
 		if (!isLocalPlayer)
@@ -103,7 +110,7 @@ public class Player : NetworkBehaviour {
                 SelectButton = null;
                 Pla = hit.transform.gameObject.GetComponent<Player>();
 				if (Pla != null) {
-					if (Pla.id != id) {
+					if (Pla.id != id && yourTurn) {
 						SelectButton = Instantiate ((GameObject)Resources.Load ("PlayerSelect"), new Vector3 (0, 0, 0), Quaternion.identity);
 						SelectButton.transform.SetParent (PlayerCamera.transform);
 						SelectButton.GetComponentInChildren<Text> ().text = "Player " + Pla.pseudo;

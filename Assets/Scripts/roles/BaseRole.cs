@@ -10,6 +10,7 @@ abstract public class BaseRole : MonoBehaviour {
 
     public virtual void Start () {
 		players = GameManager.instance.GetPlayers();
+
         lover = null;
         selectedPlayer = null;
         //StartCoroutine(GetComponent<Player>().Vote());
@@ -27,7 +28,7 @@ abstract public class BaseRole : MonoBehaviour {
 
         if (GetComponent<Loup>())
 			GameManager.instance.CmdRemoveWolf(gameObject);
-
+		
         players.Remove(gameObject);
         Destroy(gameObject);
     }
