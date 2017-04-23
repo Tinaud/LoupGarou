@@ -42,8 +42,8 @@ public class GameManager : NetworkBehaviour {
 	}
 
 
-
-
+	[SyncVar]
+	int nbrPlayersMax;
 
 	[SyncVar]
     int nbrPlayers;
@@ -70,6 +70,7 @@ public class GameManager : NetworkBehaviour {
 		
 		gameStarted = false;
 		nbrPlayers = 0;
+		nbrPlayersMax = 0;
 
 		refVoyante = new PlayerInfo ();
 		refChasseur = new PlayerInfo ();
@@ -102,7 +103,7 @@ public class GameManager : NetworkBehaviour {
         /*if (Input.GetKeyDown(KeyCode.Space) && nbrPlayers < 20 && !gameStarted)
             NewPlayer();*/
 
-        if((Input.GetKeyDown(KeyCode.RightShift) || Input.GetKeyDown(KeyCode.LeftShift)) && nbrPlayers > 5 && !gameStarted)
+		if((Input.GetKeyDown(KeyCode.RightShift) || Input.GetKeyDown(KeyCode.LeftShift)) && nbrPlayers > nbrPlayersMax && !gameStarted)
 			CmdStartGame();
 	}
 
@@ -170,8 +171,12 @@ public class GameManager : NetworkBehaviour {
 
 		playersList.Add(pInfo);
 		nbrPlayers++;
+		nbrPlayersMax++;
 
 		RearrangePlayers();
+
+		if (playersList.Count > 1)
+			MessageToPlayers (pInfo.ToString() + "is connected.");
 	}
 
     void RearrangePlayers() {
