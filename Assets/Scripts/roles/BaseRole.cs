@@ -9,7 +9,8 @@ abstract public class BaseRole : MonoBehaviour {
     public List<GameObject> players = new List<GameObject>();
 
     public virtual void Start () {
-        players = GameManager.instance.GetPlayers();
+		players = GameManager.instance.GetPlayers();
+
         lover = null;
         selectedPlayer = null;
         //StartCoroutine(GetComponent<Player>().Vote());
