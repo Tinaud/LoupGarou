@@ -70,7 +70,7 @@ public class GameManager : NetworkBehaviour {
 		
 		gameStarted = false;
 		nbrPlayers = 0;
-		nbrPlayersMax = 0;
+		nbrPlayersMax = 2;
 
 		refVoyante = new PlayerInfo ();
 		refChasseur = new PlayerInfo ();
@@ -103,7 +103,7 @@ public class GameManager : NetworkBehaviour {
         /*if (Input.GetKeyDown(KeyCode.Space) && nbrPlayers < 20 && !gameStarted)
             NewPlayer();*/
 
-		if((Input.GetKeyDown(KeyCode.RightShift) || Input.GetKeyDown(KeyCode.LeftShift)) && nbrPlayers > nbrPlayersMax && !gameStarted)
+		if(nbrPlayers >= nbrPlayersMax && !gameStarted)
 			CmdStartGame();
 	}
 
@@ -124,26 +124,32 @@ public class GameManager : NetworkBehaviour {
             switch (roles[r]) {
                 case "Villageois":
                     g.playerRef.gameObject.AddComponent<Villageois>();
+                    g.playerRef.UpdateChatB("Villageois");
                     break;
                 case "Loup-Garou":
 					g.playerRef.gameObject.AddComponent<Loup>();
-					wolvesList.Add(g);
+                    g.playerRef.UpdateChatB("Loup");
+                    wolvesList.Add(g);
                     break;
                 case "Sorcière":
 					g.playerRef.gameObject.AddComponent<Sorciere>();
-					refSorciere = g;
+                    g.playerRef.UpdateChatB("Sorciere");
+                    refSorciere = g;
                     break;
                 case "Cupidon":
 					g.playerRef.gameObject.AddComponent<Cupidon>();
-					refCupidon = g;
+                    g.playerRef.UpdateChatB("Cupidon");
+                    refCupidon = g;
                     break;
                 case "Chasseur":
 					g.playerRef.gameObject.AddComponent<Chasseur>();
-					refChasseur = g;
+                    g.playerRef.UpdateChatB("Chasseur");
+                    refChasseur = g;
                     break;
                 case "Voyante":
 					g.playerRef.gameObject.AddComponent<Voyante>();
-					refVoyante = g;
+                    g.playerRef.UpdateChatB("Voyante");
+                    refVoyante = g;
                     break;
                 default:
                     Debug.Log("Unknown role :(");
@@ -171,7 +177,7 @@ public class GameManager : NetworkBehaviour {
 
 		playersList.Add(pInfo);
 		nbrPlayers++;
-		nbrPlayersMax++;
+		//nbrPlayersMax++;
 
 		RearrangePlayers();
 
@@ -245,19 +251,25 @@ public class GameManager : NetworkBehaviour {
 		if(refCupidon.playerRef != null) {
             MessageToPlayers("MJ : Cupidon choisi deux personnes qui tomberont amoureuse");
 			BaseRole _refCupidon = refCupidon.playerRef.GetComponent<BaseRole>();
-			_refCupidon.PlayTurn();
+            refCupidon.playerRef.yourTurn = true;
+            _refCupidon.PlayTurn();
 			yield return new WaitUntil(() => _refCupidon.IsReady());
+            refCupidon.playerRef.yourTurn = false;
         }
 
-        while(gameStarted) {
+        bool gameRun = true;
+
+        while(gameRun) {
 
             //VOYANTE
 			if(refVoyante.playerRef != null)
             {
                 MessageToPlayers("MJ : La voyante choisi une personne pour connaitre son rôle");
 				BaseRole _refVoyante = refVoyante.playerRef.GetComponent<BaseRole>();
-				_refVoyante.PlayTurn();
+                refVoyante.playerRef.yourTurn = true;
+                _refVoyante.PlayTurn();
 				yield return new WaitUntil(() => _refVoyante.IsReady());
+                refVoyante.playerRef.yourTurn = false;
             }
 
             //LOUPS
@@ -299,12 +311,14 @@ public class GameManager : NetworkBehaviour {
             yield return new WaitForSeconds(4f);
             
 			if (wolvesList.Count <= 0) {
+                MessageToPlayers("VILLAGEOIS GAGNENT!");
                 Debug.Log("VILLAGEOIS GAGNENT!");
-                gameStarted = false;
+                gameRun = false;
             }
 			else if(playersList.Count == wolvesList.Count) {
+                MessageToPlayers("MJ :  LOUPS GAGNENT!");
                 Debug.Log("LOUPS GAGNENT!");
-                gameStarted = false;
+                gameRun = false;
             } 
         }
     }

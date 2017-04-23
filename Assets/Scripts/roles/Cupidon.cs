@@ -25,7 +25,11 @@ public class Cupidon : BaseRole {
         secondSelected.GetComponent<BaseRole>().SetLover(selectedPlayer);
 
         Debug.Log("[CUPIDON] Le couple est " + selectedPlayer.GetComponent<Player>().ID() + " et " + secondSelected.GetComponent<Player>().ID());
+    }
 
-        ready = true;
+    private void Update()
+    {
+        if (selectedPlayer!= null && secondSelected != null)
+            ready = true;
     }
 }
