@@ -8,6 +8,9 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/OfflineScene.unity
     guid: 30de5790337656643bfb948032b9ee2f
-  - enabled: 1
-    path: Assets/Scenes/OnlineSceneTest.unity
+  - enabled: 0
+    path: Assets/Scenes/OnlineScene.unity
     guid: 9b49ab64b6f5a664ea7a635ded9f6cc2
+  - enabled: 1
+    path: Assets/Scenes/SceneMathieu.unity
+    guid: e3e05ad537a087e429e4dca0a192d61d

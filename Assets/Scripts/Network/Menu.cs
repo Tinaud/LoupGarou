@@ -16,8 +16,6 @@ public class Menu : MonoBehaviour {
 			NetworkManager.singleton.StopMatchMaker ();
 		else
 			NetworkManager.singleton.StartMatchMaker ();
-		
-		Debug.Log (isLAN);
 	}
 
 	void Start () {

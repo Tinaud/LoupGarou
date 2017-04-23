@@ -35,7 +35,7 @@ public class NetworkManager_Custom : NetworkManager {
 		matchName = Regex.IsMatch(matchName, @"[a-zA-Z0-9_]{3,16}$") ? matchName : GameObject.Find ("InputFieldRoomName").transform.FindChild ("Placeholder").GetComponent<Text> ().text;
 
 		uint matchSize = (uint)int.Parse(GameObject.Find("RoomSizeNumber").transform.FindChild("Text").GetComponent<Text>().text);
-		matchSize = matchSize < 8 ? 8 : matchSize > 20 ? 20 : matchSize;
+		matchSize = matchSize < 2 ? 2 : matchSize > 20 ? 20 : matchSize;
 
 		bool matchAdvertise = true;
 

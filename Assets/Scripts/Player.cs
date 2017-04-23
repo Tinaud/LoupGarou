@@ -5,25 +5,13 @@ using UnityEngine.Networking.NetworkSystem;
 using UnityEngine.UI;
 
 public class Player : NetworkBehaviour {
+	
+	[SerializeField]
+	GameObject ChatBoxPrefab = null;
 
-	/*const short CHAT_MESSAGE = 1002;
+	[SerializeField]
+	Camera PlayerCamera = null;
 
-	class ChatMessage : MessageBase {
-		public string message;
-	}
-
-	public void SendChatMessage(string _message) {
-		ChatMessage msg = new ChatMessage ();
-		msg.message = _message;
-		Debug.Log ("Sending... " + msg.message);
-		NetworkServer.SendToAll (MsgType.Highest+2, msg);
-	}
-
-	public void ReadMessage(NetworkMessage netMsg) {
-		ChatMessage msg = netMsg.ReadMessage<ChatMessage>();
-		Debug.Log ("Receiving... " + msg.message);
-		CurrentChat.ChatUpdate(msg.message);
-	}*/
     static int nextId = 0;
 
 	[SyncVar]
@@ -35,28 +23,30 @@ public class Player : NetworkBehaviour {
 	GameManager gameManager;
 
     Quaternion targetRotation;
-    public GameObject ChatPrefab;
+   	
     GameObject SelectButton;
-    GameObject ChatB;
 	ChatBox CurrentChat;
 
     Player Pla;
     bool yourTurn = true;
 
 	public override void OnStartLocalPlayer() {
-		
-
 
 		changeColor (Color.red);
 
-		ChatB = Instantiate (ChatPrefab, new Vector3 (0, 0, 0), Quaternion.identity);
-		ChatB.transform.SetParent (Camera.main.transform);
+		gameObject.AddComponent<MouseLook> ();
+		GetComponent<MouseLook> ().axes = MouseLook.RotationAxes.MouseX;
+		GetComponent<MouseLook> ().sensitivityX = 5;
+
+		GameObject ChatB = Instantiate (ChatBoxPrefab, new Vector3 (0, 0, 0), Quaternion.identity);
+		ChatB.transform.SetParent (PlayerCamera.transform);
 		CurrentChat = ChatB.GetComponent<ChatBox> ();
 		CurrentChat.setPlayer (this);
+
+		Cursor.lockState = CursorLockMode.Locked;
 	}
 
 	public override void OnStartClient() {
-		Debug.Log ("hello");
 		CmdSetup ();
 	}
 
@@ -73,7 +63,8 @@ public class Player : NetworkBehaviour {
 	}
 
     void Start() {
-		
+		if (!isLocalPlayer)
+			PlayerCamera.enabled = false;
     }
 		
 	public void changeColor(Color c) {
@@ -105,19 +96,20 @@ public class Player : NetworkBehaviour {
         if (Input.GetMouseButtonDown(0) && yourTurn)
         {
             RaycastHit hit;
-            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-            if (Physics.Raycast(ray, out hit))
+			//Ray ray = PlayerCamera.ScreenPointToRay(Input.mousePosition);
+			if (Physics.Raycast(PlayerCamera.transform.position, PlayerCamera.transform.forward, out hit))
             {
                 Destroy(SelectButton);
                 SelectButton = null;
                 Pla = hit.transform.gameObject.GetComponent<Player>();
-                if (Pla.id == id && Pla != null && isLocalPlayer)
-                {
-                    SelectButton = Instantiate((GameObject)Resources.Load("PlayerSelect"), new Vector3(0, 0, 0), Quaternion.identity);
-                    SelectButton.transform.SetParent(Camera.main.transform);
-                    SelectButton.GetComponentInChildren<Text>().text = "Player " + Pla.pseudo;
-                    SelectButton.GetComponentInChildren<Button>().onClick.AddListener(selectionPlayer);
-                }
+				if (Pla != null) {
+					if (Pla.id != id) {
+						SelectButton = Instantiate ((GameObject)Resources.Load ("PlayerSelect"), new Vector3 (0, 0, 0), Quaternion.identity);
+						SelectButton.transform.SetParent (PlayerCamera.transform);
+						SelectButton.GetComponentInChildren<Text> ().text = "Player " + Pla.pseudo;
+						SelectButton.GetComponentInChildren<Button> ().onClick.AddListener (selectionPlayer);
+					}
+				}
             }
         }
     }

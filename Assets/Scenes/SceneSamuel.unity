@@ -333,7 +333,7 @@ Transform:
   m_LocalPosition: {x: 0, y: 1, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
-  - {fileID: 1938438401}
+  - {fileID: 1835388159}
   - {fileID: 1673706119}
   m_Father: {fileID: 0}
   m_RootOrder: 0
@@ -771,11 +771,36 @@ Prefab:
       propertyPath: m_SizeDelta.y
       value: -17
       objectReference: {fileID: 0}
+    - target: {fileID: 224439846233316198, guid: dd416d664153ef74db223a0c7641735d,
+        type: 2}
+      propertyPath: m_AnchorMax.x
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 224439846233316198, guid: dd416d664153ef74db223a0c7641735d,
+        type: 2}
+      propertyPath: m_AnchorMax.y
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 224524640298023214, guid: dd416d664153ef74db223a0c7641735d,
+        type: 2}
+      propertyPath: m_AnchoredPosition.y
+      value: 22
+      objectReference: {fileID: 0}
+    - target: {fileID: 224237055834777858, guid: dd416d664153ef74db223a0c7641735d,
+        type: 2}
+      propertyPath: m_AnchorMax.x
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 224237055834777858, guid: dd416d664153ef74db223a0c7641735d,
+        type: 2}
+      propertyPath: m_AnchorMax.y
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: dd416d664153ef74db223a0c7641735d, type: 2}
   m_IsPrefabParent: 0
---- !u!224 &1938438401 stripped
+--- !u!224 &1835388159 stripped
 RectTransform:
-  m_PrefabParentObject: {fileID: 224249979508967212, guid: dd416d664153ef74db223a0c7641735d,
+  m_PrefabParentObject: {fileID: 224081773104322130, guid: dd416d664153ef74db223a0c7641735d,
     type: 2}
   m_PrefabInternal: {fileID: 1835388158}

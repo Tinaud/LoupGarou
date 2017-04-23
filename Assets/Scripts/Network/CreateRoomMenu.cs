@@ -7,7 +7,7 @@ public class CreateRoomMenu : MonoBehaviour {
 
 	public Text RoomSizeUI;
 	public InputField RoomName;
-	private int roomSizeNumber = 8;
+	private int roomSizeNumber = 2;
 
 	public int RoomSizeNumber {
 		get { return roomSizeNumber; }
@@ -42,7 +42,7 @@ public class CreateRoomMenu : MonoBehaviour {
 	}
 
 	public void DecreaseRoomSize() {
-		if (roomSizeNumber <= 8)
+		if (roomSizeNumber <= 2)
 			return;
 
 		roomSizeNumber--;

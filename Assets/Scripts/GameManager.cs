@@ -38,15 +38,15 @@ public class GameManager : NetworkBehaviour {
 
 	void PlayerChanged(SyncListPlayer.Operation op, int itemIndex)
 	{
-		Debug.Log("player changed: " + op);
+		Debug.Log("New player connected: " + op);
 	}
 
 
 	[SyncVar]
-	int nbrPlayersMax;
+	uint nbrPlayersMax;
 
 	[SyncVar]
-    int nbrPlayers;
+    uint nbrPlayers;
 
 	public SyncListPlayer playersList = new SyncListPlayer();
 	public SyncListPlayer wolvesList = new SyncListPlayer();
@@ -70,7 +70,11 @@ public class GameManager : NetworkBehaviour {
 		
 		gameStarted = false;
 		nbrPlayers = 0;
-		nbrPlayersMax = 0;
+
+		if (NetworkManager.singleton.matchMaker != null)
+			nbrPlayersMax = NetworkManager.singleton.matchSize;
+		else
+			nbrPlayersMax = (uint)NetworkManager.singleton.maxConnections;
 
 		refVoyante = new PlayerInfo ();
 		refChasseur = new PlayerInfo ();
@@ -109,6 +113,7 @@ public class GameManager : NetworkBehaviour {
 
 	[Command]
     void CmdStartGame() {
+		Debug.Log ("Game started");
         gameStarted = true;
 
         float wolfNumber = Mathf.Floor(nbrPlayers / 3.0f);
@@ -170,13 +175,17 @@ public class GameManager : NetworkBehaviour {
 		pInfo.netId = _p.GetComponent<NetworkIdentity> ().netId;
 
 		playersList.Add(pInfo);
-		nbrPlayers++;
-		nbrPlayersMax++;
+		nbrPlayers = playersList.Count;
 
 		RearrangePlayers();
 
-		if (playersList.Count > 1)
+		if (nbrPlayers > 1)
 			MessageToPlayers (pInfo.ToString() + "is connected.");
+
+		Debug.Log ("players connected " + nbrPlayers + "/" + nbrPlayersMax);
+
+		if (nbrPlayers == nbrPlayersMax)
+			CmdStartGame ();
 	}
 
     void RearrangePlayers() {
