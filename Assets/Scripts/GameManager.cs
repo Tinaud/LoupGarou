@@ -295,7 +295,7 @@ public class GameManager : NetworkBehaviour {
         yield return new WaitForSeconds(2f);
 
         //CUPIDON
-		if(refCupidon.pseudo != null) {
+		if(refCupidon.playerRef() != null) {
             MessageToPlayers("MJ : Cupidon choisi deux personnes qui tomberont amoureuse", true);
 			BaseRole _refCupidon = refCupidon.playerRef().GetComponent<BaseRole>();
             refCupidon.playerRef().yourTurn = true;
@@ -309,7 +309,7 @@ public class GameManager : NetworkBehaviour {
         while(gameRun) {
 
             //VOYANTE
-			if(refVoyante.pseudo != null)
+			if(refVoyante.playerRef() != null)
             {
                 MessageToPlayers("MJ : La voyante choisi une personne pour connaitre son rôle", true);
 				BaseRole _refVoyante = refVoyante.playerRef().GetComponent<BaseRole>();
@@ -329,7 +329,7 @@ public class GameManager : NetworkBehaviour {
             }
 
             //SORCIÈRE
-			if(refSorciere.pseudo != null)
+			if(refSorciere.playerRef() != null)
             {
                 turnIssue = TurnIssue.WITCH;
 				FireForPlayers ();
@@ -431,6 +431,7 @@ public class GameManager : NetworkBehaviour {
             {
 				g.playerRef().yourTurn = false;
 				g.playerRef().prevVote = -1;
+                g.playerRef().vote = 0;
             }
 
             if (turnIssue != TurnIssue.NO_VICTIMS)
