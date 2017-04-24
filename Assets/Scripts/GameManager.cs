@@ -270,12 +270,14 @@ public class GameManager : NetworkBehaviour {
 
         //CUPIDON
 		if(refCupidon.playerRef() != null) {
-            MessageToPlayers("MJ : Cupidon choisi deux personnes qui tomberont amoureuse", true);
-			BaseRole _refCupidon = refCupidon.playerRef().GetComponent<BaseRole>();
+            BaseRole _refCupidon = refCupidon.playerRef().GetComponent<BaseRole>();
+            MessageToPlayers("MJ : Cupidon choisi deux personnes qui tomberont amoureuses", true);
+			
             refCupidon.playerRef().yourTurn = true;
             _refCupidon.PlayTurn();
 			yield return new WaitUntil(() => _refCupidon.IsReady());
             refCupidon.playerRef().yourTurn = false;
+            ResetVote();
         }
 
         bool gameRun = true;
@@ -285,12 +287,11 @@ public class GameManager : NetworkBehaviour {
             //VOYANTE
 			if(refVoyante.playerRef() != null) {
                 BaseRole _refVoyante = refVoyante.playerRef().GetComponent<BaseRole>();
-
                 MessageToPlayers("MJ : La voyante choisi une personne pour connaitre son rôle", true);
 
                 refVoyante.playerRef().yourTurn = true;
                 _refVoyante.PlayTurn();
-				yield return new WaitUntil(() => _refVoyante.IsReady());
+                yield return new WaitUntil(() => _refVoyante.IsReady());
                 MessageToPlayers("VOYANTE : La voyante a sondé : " + _refVoyante.GetSelectedPlayer().GetComponent<BaseRole>().ToString(), true);
                 refVoyante.playerRef().yourTurn = false;
                 ResetVote();

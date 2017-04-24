@@ -5,6 +5,8 @@ using UnityEngine.Networking;
 abstract public class BaseRole : NetworkBehaviour {
 
     protected bool ready;
+
+    [SyncVar]
     protected GameObject selectedPlayer;
 
 	[SyncVar]
@@ -47,6 +49,18 @@ abstract public class BaseRole : NetworkBehaviour {
     }
 
     public void SetSelectedPlayer(GameObject g) {
-        selectedPlayer = g;
+        if(GetComponent<Cupidon>()) {
+            if (selectedPlayer != null && selectedPlayer != g)
+                GetComponent<Cupidon>().SetSecondLover(g);       
+            else if (selectedPlayer == null)
+                selectedPlayer = g;   
+        }
+        else
+            selectedPlayer = g;
+    }
+
+    [Command]
+    public void CmdMsg(string msg, bool pV) {
+        GameManager.instance.MessageToPlayers(msg, pV);
     }
 }

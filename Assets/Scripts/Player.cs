@@ -174,11 +174,16 @@ public class Player : NetworkBehaviour {
 						SelectButton.GetComponentInChildren<Button> ().onClick.AddListener (selectionPlayer);*/
                         CmdVote(Pla.id, prevVote);
                         prevVote = Pla.id;
-                        GetComponent<BaseRole>().SetSelectedPlayer(Pla.gameObject);
-					}
+                        CmdSetSelected(Pla.gameObject);
+                    }
 				}
             }
         }
+    }
+
+    [Command]
+    public void CmdSetSelected(GameObject g) {
+        GetComponent<BaseRole>().SetSelectedPlayer(g);
     }
 
     [Command]
@@ -186,6 +191,12 @@ public class Player : NetworkBehaviour {
     {
         GameManager.instance.Vote(id, pV);
     }
+
+    [Command]
+    public void CmdMsg(string msg, bool pV) {
+        GameManager.instance.MessageToPlayers(msg, pV);
+    }
+
 
     void selectionPlayer()
     {
