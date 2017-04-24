@@ -3,11 +3,11 @@
 public class Sorciere : BaseRole {
 
     bool lifePotion;
-    bool deathPotion;
+    bool VICTIMSPotion;
 
     public override void Start() {
         lifePotion = true;
-        deathPotion = true;
+        VICTIMSPotion = true;
 
         base.Start();
     }
@@ -15,11 +15,13 @@ public class Sorciere : BaseRole {
     public override void PlayTurn() {
         ready = false;
 
+
+
         if(lifePotion) {
 
         }
 
-        if(deathPotion) {
+        if(VICTIMSPotion) {
 
         }
 

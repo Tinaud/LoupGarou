@@ -24,12 +24,6 @@ abstract public class BaseRole : NetworkBehaviour {
     public virtual void Die() {
         Debug.Log("{MORT} " + GetType() + " (id : " + GetComponent<Player>().ID() + ") est mouru!");
 
-        if(lover != null) {
-            Debug.Log("Son amour apporta quelqu'un dans la mort.");
-            lover.GetComponent<BaseRole>().SetLover(null);
-            lover.GetComponent<BaseRole>().Die();
-        }
-
 		CmdRemovePlayer (gameObject);
         /*Destroy(gameObject);*/
     }

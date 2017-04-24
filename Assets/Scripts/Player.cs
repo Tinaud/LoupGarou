@@ -33,6 +33,8 @@ public class Player : NetworkBehaviour {
 
     Player Pla;
 
+	FireLightScript fireCamp;
+
     [SyncVar]
     public bool yourTurn = false;
 
@@ -50,7 +52,7 @@ public class Player : NetworkBehaviour {
         PlayerCamera.tag = "MainCamera";
 
 		CmdSetup ();
-        
+		fireCamp = GameObject.Find ("Campfire").GetComponent<FireLightScript> ();
 
         GameObject ChatB = Instantiate (ChatBoxPrefab, new Vector3 (0, 0, 0), Quaternion.identity);
 		ChatB.transform.SetParent (PlayerCamera.transform);
@@ -75,6 +77,15 @@ public class Player : NetworkBehaviour {
 		gameManager.AddPlayer (gameObject);
 	}
 
+	[ClientRpc]
+	public void RpcChangeFireColor(GameManager.TurnIssue issue) 
+	{
+		if (!isLocalPlayer)
+			return;
+		
+		fireCamp.ChangeColor (issue);
+	}
+
     [ClientRpc]
     public void RpcUpdateChatBRole(string role)
     {
@@ -90,6 +101,7 @@ public class Player : NetworkBehaviour {
     {
         if (!isLocalPlayer)
             return;
+		
         Capsule.GetComponent<MeshRenderer> ().material.color = c;
 		Capsule.transform.Find("Arm").GetComponent<MeshRenderer>().material.color = c;
 	}
@@ -109,16 +121,16 @@ public class Player : NetworkBehaviour {
     [Command]
     public void CmdSendMsg(string Message)
     {
-        //Appel server pour l'envoie du message
 		gameManager.MessageToPlayers(Message);
     }
 		
 	[ClientRpc]
     public void RpcAddMsg(string Message)
     {
-        //Appel su serveur pour l'ajout du message
-		if (isLocalPlayer)
-            CurrentChat.ChatUpdate(Message);
+		if (!isLocalPlayer)
+			return;
+
+		CurrentChat.ChatUpdate(Message);
     }
 
     void Update() {

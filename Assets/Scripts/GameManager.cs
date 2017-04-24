@@ -6,21 +6,35 @@ using UnityEngine.Networking;
 public class GameManager : NetworkBehaviour {
 
 	public struct PlayerInfo {
-		public Player playerRef;
+		public string pseudo;
 		public NetworkInstanceId netId;
 
-		public PlayerInfo(NetworkInstanceId _netId,  Player _p) {
+		public PlayerInfo(NetworkInstanceId _netId,  string _p) {
 			netId = _netId;
-			playerRef = _p;
+			pseudo = _p;
+		}
+
+		public Player playerRef() {
+			return NetworkServer.FindLocalObject (netId).GetComponent<Player>();
+		}
+
+		public void setPlayerRef(Player p) {
+			Player _p = NetworkServer.FindLocalObject (netId).GetComponent<Player> ();
+			_p = p;
 		}
 
 		public override string ToString ()
 		{
-			return playerRef.pseudo + " (" + netId + ") ";
+			return pseudo + " (" + netId + ") ";
+		}
+
+		public bool Equals (PlayerInfo p)
+		{
+			return (netId == p.netId) && (pseudo == p.pseudo);
 		}
 	}
 
-    public enum TurnIssue { NO_DEATH, DEATH, WITCH };
+    public enum TurnIssue { NO_VICTIMS, VICTIMS, WITCH, DEAD };
 
 	[SyncVar]
     bool gameStarted;
@@ -35,10 +49,10 @@ public class GameManager : NetworkBehaviour {
 	PlayerInfo refSorciere;
 
     [SerializeField]
-    GameObject fireCamp;
+    GameObject fireCamp = null;
 
     [SyncVar]
-    public TurnIssue turnIssue = TurnIssue.NO_DEATH;
+    public TurnIssue turnIssue = TurnIssue.NO_VICTIMS;
 
     public class SyncListPlayer : SyncListStruct<PlayerInfo> {} 
 
@@ -55,6 +69,7 @@ public class GameManager : NetworkBehaviour {
 	public SyncListPlayer playersList = new SyncListPlayer();
 	public SyncListPlayer wolvesList = new SyncListPlayer();
 	public SyncListPlayer victimsList = new SyncListPlayer();
+	public SyncListPlayer ghostsList = new SyncListPlayer();
 
 	public SyncListString nom = new SyncListString();
 	SyncListString roles = new SyncListString();
@@ -127,33 +142,33 @@ public class GameManager : NetworkBehaviour {
 
             switch (roles[r]) {
                 case "Villageois":
-                    g.playerRef.gameObject.AddComponent<Villageois>();
+                    g.playerRef().gameObject.AddComponent<Villageois>();
                     break;
                 case "Loup-Garou":
-					g.playerRef.gameObject.AddComponent<Loup>();
+					g.playerRef().gameObject.AddComponent<Loup>();
                     wolvesList.Add(g);
                     break;
                 case "Sorcière":
-					g.playerRef.gameObject.AddComponent<Sorciere>();
+					g.playerRef().gameObject.AddComponent<Sorciere>();
                     refSorciere = g;
                     break;
                 case "Cupidon":
-					g.playerRef.gameObject.AddComponent<Cupidon>();
+					g.playerRef().gameObject.AddComponent<Cupidon>();
                     refCupidon = g;
                     break;
                 case "Chasseur":
-					g.playerRef.gameObject.AddComponent<Chasseur>();
+					g.playerRef().gameObject.AddComponent<Chasseur>();
                     refChasseur = g;
                     break;
                 case "Voyante":
-					g.playerRef.gameObject.AddComponent<Voyante>();
+					g.playerRef().gameObject.AddComponent<Voyante>();
                     refVoyante = g;
                     break;
                 default:
                     Debug.Log("Unknown role :(");
                     break;
             }
-			g.playerRef.RpcUpdateChatBRole("[" + roles[r] +"]");
+			g.playerRef().RpcUpdateChatBRole(g.pseudo + " [" + roles[r] +"]");
             roles.RemoveAt(r);
         }
 
@@ -169,9 +184,7 @@ public class GameManager : NetworkBehaviour {
 
 	public void AddPlayer(GameObject _p) {
 
-		PlayerInfo pInfo = new PlayerInfo ();
-		pInfo.playerRef = _p.GetComponent<Player> ();
-		pInfo.netId = _p.GetComponent<NetworkIdentity> ().netId;
+		PlayerInfo pInfo = new PlayerInfo (_p.GetComponent<NetworkIdentity> ().netId, _p.GetComponent<Player> ().pseudo);
 
 		playersList.Add(pInfo);
 		nbrPlayers = playersList.Count;
@@ -196,7 +209,7 @@ public class GameManager : NetworkBehaviour {
             Vector3 pos = new Vector3(fireCampPos.x + 10f * Mathf.Cos(angle), 0, fireCampPos.z + 10f * Mathf.Sin(angle));
             Quaternion rotation = Quaternion.LookRotation(fireCampPos - pos);
 
-            g.playerRef.RpcUpdatePosition(pos, rotation);
+            g.playerRef().RpcUpdatePosition(pos, rotation);
 
             angle += (2 * Mathf.PI) / playersList.Count;
         }
@@ -214,7 +227,7 @@ public class GameManager : NetworkBehaviour {
 		List<GameObject> _playerList = new List<GameObject> ();
 
 		foreach (PlayerInfo _p in playersList)
-			_playerList.Add (_p.playerRef.gameObject);
+			_playerList.Add (_p.playerRef().gameObject);
 
 		return _playerList;
     }
@@ -223,35 +236,27 @@ public class GameManager : NetworkBehaviour {
         return gameStarted;
     }
 
-	public void RemovePlayer(GameObject _w) {
-		PlayerInfo pInfo = new PlayerInfo ();
-		pInfo.playerRef = _w.GetComponent<Player> ();
-		pInfo.netId = _w.GetComponent<NetworkIdentity> ().netId;
+	public void RemovePlayer(GameObject _p) {
+		PlayerInfo pInfo = new PlayerInfo (_p.GetComponent<NetworkIdentity> ().netId, _p.GetComponent<Player> ().pseudo);
 
 		playersList.Remove(pInfo);
 	}
 		
-	public void RemoveWolf(GameObject _w) {
-		PlayerInfo pInfo = new PlayerInfo ();
-		pInfo.playerRef = _w.GetComponent<Player> ();
-		pInfo.netId = _w.GetComponent<NetworkIdentity> ().netId;
+	public void RemoveWolf(GameObject _p) {
+		PlayerInfo pInfo = new PlayerInfo (_p.GetComponent<NetworkIdentity> ().netId, _p.GetComponent<Player> ().pseudo);
 
 		wolvesList.Remove(pInfo);
     }
     
-    public void RemoveVictims(GameObject _v)
+    public void RemoveVictims(GameObject _p)
     {
-        PlayerInfo pInfo = new PlayerInfo();
-        pInfo.playerRef = _v.GetComponent<Player>();
-        pInfo.netId = _v.GetComponent<NetworkIdentity>().netId;
+		PlayerInfo pInfo = new PlayerInfo (_p.GetComponent<NetworkIdentity> ().netId, _p.GetComponent<Player> ().pseudo);
 
         victimsList.Remove(pInfo);
     }
 
-    public void AddVictim(GameObject _v) {
-		PlayerInfo pInfo = new PlayerInfo ();
-		pInfo.playerRef = _v.GetComponent<Player> ();
-		pInfo.netId = _v.GetComponent<NetworkIdentity> ().netId;
+    public void AddVictim(GameObject _p) {
+		PlayerInfo pInfo = new PlayerInfo (_p.GetComponent<NetworkIdentity> ().netId, _p.GetComponent<Player> ().pseudo);
 
 		victimsList.Add(pInfo);
     }
@@ -265,13 +270,13 @@ public class GameManager : NetworkBehaviour {
         yield return new WaitForSeconds(2f);
 
         //CUPIDON
-		if(refCupidon.playerRef != null) {
+		if(refCupidon.playerRef() != null) {
             MessageToPlayers("MJ : Cupidon choisi deux personnes qui tomberont amoureuse");
-			BaseRole _refCupidon = refCupidon.playerRef.GetComponent<BaseRole>();
-            refCupidon.playerRef.yourTurn = true;
+			BaseRole _refCupidon = refCupidon.playerRef().GetComponent<BaseRole>();
+            refCupidon.playerRef().yourTurn = true;
             _refCupidon.PlayTurn();
 			yield return new WaitUntil(() => _refCupidon.IsReady());
-            refCupidon.playerRef.yourTurn = false;
+            refCupidon.playerRef().yourTurn = false;
         }
 
         bool gameRun = true;
@@ -279,49 +284,89 @@ public class GameManager : NetworkBehaviour {
         while(gameRun) {
 
             //VOYANTE
-			if(refVoyante.playerRef != null)
+			if(refVoyante.playerRef() != null)
             {
                 MessageToPlayers("MJ : La voyante choisi une personne pour connaitre son rôle");
-				BaseRole _refVoyante = refVoyante.playerRef.GetComponent<BaseRole>();
-                refVoyante.playerRef.yourTurn = true;
+				BaseRole _refVoyante = refVoyante.playerRef().GetComponent<BaseRole>();
+                refVoyante.playerRef().yourTurn = true;
                 _refVoyante.PlayTurn();
 				yield return new WaitUntil(() => _refVoyante.IsReady());
-                refVoyante.playerRef.yourTurn = false;
+                refVoyante.playerRef().yourTurn = false;
             }
 
             //LOUPS
 			if(wolvesList.Count > 0)
             {
                 MessageToPlayers("MJ : Les loups choissisent une personnes à tuer");
-				BaseRole _refWolf = wolvesList[0].playerRef.GetComponent<BaseRole>();
+				BaseRole _refWolf = wolvesList[0].playerRef().GetComponent<BaseRole>();
 				_refWolf.PlayTurn();
 				yield return new WaitUntil(() => _refWolf.IsReady());
             }
 
             //SORCIÈRE
-			if(refSorciere.playerRef != null)
+			if(refSorciere.playerRef() != null)
             {
                 turnIssue = TurnIssue.WITCH;
-                fireCamp.GetComponent<FireLightScript>().RpcChangeColor();
+				FireForPlayers ();
                 MessageToPlayers("MJ : La sorcière choisi de sauver ou de tuer une personne");
-				BaseRole _refSorciere = refSorciere.playerRef.GetComponent<BaseRole>();
+
+				BaseRole _refSorciere = refSorciere.playerRef().GetComponent<BaseRole>();
 				_refSorciere.PlayTurn();
 				yield return new WaitUntil(() => _refSorciere.IsReady());
             }
 
+			yield return new WaitForSeconds(4f);
+
             //FIN DE LA NUIT
 			if(victimsList.Count > 0) {
-                turnIssue = TurnIssue.DEATH;
-                fireCamp.GetComponent<FireLightScript>().RpcChangeColor();
-                int i;
-                foreach (PlayerInfo v in victimsList)
+                turnIssue = TurnIssue.VICTIMS;
+				FireForPlayers ();
+
+				foreach (PlayerInfo v in victimsList)
                 {
-                    BaseRole _refVictim = v.playerRef.GetComponent<BaseRole>();
+                    BaseRole _refVictim = v.playerRef().GetComponent<BaseRole>();
+
+					if (v.Equals(refSorciere))
+						refSorciere.setPlayerRef(null);
+
+					if (v.Equals(refChasseur))
+						refChasseur.setPlayerRef(null);
+
+					if (v.Equals(refCupidon))
+						refCupidon.setPlayerRef(null);
+
+					if (v.Equals(refVoyante))
+						refVoyante.setPlayerRef(null);
+
 					_refVictim.Die();
-					MessageToPlayers("MJ : " + v.playerRef.pseudo + " est retrouvé mort. C'était : " + _refVictim.GetType());
+					v.playerRef ().RpcUpdateChatBRole (v.pseudo + " [Ghost - " + _refVictim.GetType () + "]");
+					v.playerRef().RpcChangeFireColor (TurnIssue.DEAD);
+
+					ghostsList.Add (v);
+
+					MessageToPlayers("MJ : " + v.playerRef().pseudo + " est retrouvé mort. C'était : " + _refVictim.GetType());
+
+					if(_refVictim.lover != null) {
+						BaseRole _refLover = _refVictim.lover.GetComponent<BaseRole> ();
+						Player _refLoverP = _refLover.GetComponent<Player> ();
+						Debug.Log("Son amour apporta quelqu'un dans la mort.");
+
+						MessageToPlayers ("MJ : Son amour apporta quelqu'un dans la mort.");
+						MessageToPlayers("MJ : " + _refLoverP.pseudo + " est retrouvé mort. C'était : " + _refLover.GetType());
+
+						_refVictim.SetLover(null);
+						_refLover.SetLover (null);
+
+						_refLover.Die();
+						_refLoverP.RpcUpdateChatBRole (_refLoverP.pseudo + " [Ghost - " + _refLover.GetType () + "]");
+						_refLoverP.RpcChangeFireColor (TurnIssue.DEAD);
+
+						ghostsList.Add (new PlayerInfo(_refLoverP.GetComponent<NetworkIdentity>().netId, _refLoverP.pseudo));
+
+					}
                 }
 
-                SaveVictim();
+				victimsList.Clear ();
             }
             else
             {
@@ -344,10 +389,10 @@ public class GameManager : NetworkBehaviour {
                 gameRun = false;
             }
 
-            if (turnIssue != TurnIssue.NO_DEATH)
+            if (turnIssue != TurnIssue.NO_VICTIMS)
             {
-                turnIssue = TurnIssue.NO_DEATH;
-                fireCamp.GetComponent<FireLightScript>().RpcChangeColor();
+                turnIssue = TurnIssue.NO_VICTIMS;
+				FireForPlayers ();
             }
             
         }
@@ -357,7 +402,20 @@ public class GameManager : NetworkBehaviour {
 	{
 		foreach (PlayerInfo p in playersList)
         {
-			p.playerRef.RpcAddMsg(Msg);
+			p.playerRef().RpcAddMsg(Msg);
         }
+
+		foreach (PlayerInfo p in ghostsList)
+		{
+			p.playerRef().RpcAddMsg(Msg);
+		}
     }
+
+	public void FireForPlayers()
+	{
+		foreach (PlayerInfo p in playersList)
+		{
+			p.playerRef().RpcChangeFireColor(turnIssue);
+		}
+	}
 }
