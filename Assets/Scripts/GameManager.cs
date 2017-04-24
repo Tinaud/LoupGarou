@@ -15,7 +15,12 @@ public class GameManager : NetworkBehaviour {
 		}
 
 		public Player playerRef() {
-			return NetworkServer.FindLocalObject (netId).GetComponent<Player>();
+			GameObject p = NetworkServer.FindLocalObject (netId);
+
+			if (p == null)
+				return null;
+
+			return p.GetComponent<Player> ();
 		}
 
 		public void setPlayerRef(Player p) {
