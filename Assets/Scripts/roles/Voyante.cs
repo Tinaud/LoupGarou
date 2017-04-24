@@ -19,11 +19,7 @@ public class Voyante : BaseRole {
 	}
 
     IEnumerator WaitForChoice() {
-        while(selectedPlayer == null) {
-            Debug.Log(selectedPlayer);
-            yield return new WaitForSeconds(0.5f);
-        }
-
+        yield return new WaitWhile(() => selectedPlayer == null);
         ready = true;
     }
 }

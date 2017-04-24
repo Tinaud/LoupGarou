@@ -11,9 +11,6 @@ public class Loup : BaseRole {
     public override void PlayTurn() {
         ready = false;
         selectedPlayer = null;
-
-        GameManager.instance.MessageToPlayers("MJ : TOUR DES LOUPS", true);
-
         //StartCoroutine(WaitForChoice());
         ready = true;
     }

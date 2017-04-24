@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using System.Collections;
 
 public class Cupidon : BaseRole {
 
@@ -13,30 +14,23 @@ public class Cupidon : BaseRole {
         ready = false;
 
         players = GameManager.instance.GetPlayers();
+        StartCoroutine(WaitForChoice());
+    }
 
-        int rand = Random.Range(0, players.Count);
-        int rand2 = rand;
-
-        while (rand == rand2)
-            rand2 = Random.Range(0, players.Count);
-
-        selectedPlayer = players[rand];
-        secondSelected = players[rand2];
+    IEnumerator WaitForChoice() {
+        yield return new WaitWhile(() => selectedPlayer == null || secondSelected == null);
 
         selectedPlayer.GetComponent<BaseRole>().SetLover(secondSelected);
         secondSelected.GetComponent<BaseRole>().SetLover(selectedPlayer);
 
-        //Debug.Log("[CUPIDON] Le couple est " + selectedPlayer.GetComponent<Player>().ID() + " et " + secondSelected.GetComponent<Player>().ID());
+        ready = true;
     }
 
-    private void Update()
-    {
-        if (selectedPlayer!= null && secondSelected != null)
-            ready = true;
-    }
-
-	public override string ToString ()
-	{
+    public override string ToString () {
 		return string.Format ("[Cupidon]");
 	}
+
+    public void SetSecondLover(GameObject o) {
+        secondSelected = o;
+    }
 }
