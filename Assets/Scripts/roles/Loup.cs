@@ -12,7 +12,7 @@ public class Loup : BaseRole {
         ready = false;
         selectedPlayer = null;
 
-        GameManager.instance.MessageToPlayers("MJ : TOUR DES LOUPS");
+        GameManager.instance.MessageToPlayers("MJ : TOUR DES LOUPS", true);
 
         //StartCoroutine(WaitForChoice());
         ready = true;
