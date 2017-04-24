@@ -56,10 +56,6 @@ public class GameManager : NetworkBehaviour {
 
     public class SyncListPlayer : SyncListStruct<PlayerInfo> {} 
 
-	void PlayersListChanged(SyncListPlayer.Operation op, int itemIndex) { Debug.Log("Players List changed: " + op); }
-    void WolvesListChanged(SyncListPlayer.Operation op, int itemIndex) { Debug.Log("Wolves List changed: " + op); }
-    void VictimsListChanged(SyncListPlayer.Operation op, int itemIndex) { Debug.Log("Victims List changed: " + op); }
-
     [SyncVar]
 	uint nbrPlayersMax;
 
@@ -112,22 +108,9 @@ public class GameManager : NetworkBehaviour {
 		nom.Add("MegaMan");
 		nom.Add("Catmeoutsy");
 		nom.Add("Howbowdat");
-
-		playersList.Callback = PlayersListChanged;
-		wolvesList.Callback = WolvesListChanged;
-		victimsList.Callback = VictimsListChanged;
     }
-
-    void Update () {
-        /*if (Input.GetKeyDown(KeyCode.Space) && nbrPlayers < 20 && !gameStarted)
-            NewPlayer();*/
-
-		/*if(nbrPlayers >= nbrPlayersMax && !gameStarted)
-			CmdStartGame();*/
-	}
 		
     void StartGame() {
-		Debug.Log ("Game started");
         gameStarted = true;
 
         float wolfNumber = Mathf.Floor(nbrPlayers / 3.0f);
@@ -175,13 +158,6 @@ public class GameManager : NetworkBehaviour {
         StartCoroutine(GameTurn());
     }
 
-    /*public void NewPlayer() {
-        nbrPlayers++;
-        GameObject g = Instantiate(player, new Vector3(0, 0, 0), Quaternion.identity);
-        playerList.Add(g);
-        RearrangePlayers();
-    }*/
-
 	public void AddPlayer(GameObject _p) {
 
 
@@ -196,8 +172,6 @@ public class GameManager : NetworkBehaviour {
 
 		if (nbrPlayers > 1)
 			MessageToPlayers (pInfo.ToString() + "is connected.");
-
-		Debug.Log ("players connected " + nbrPlayers + "/" + nbrPlayersMax);
 
 		if (nbrPlayers == nbrPlayersMax && !gameStarted)
 			StartGame ();
@@ -305,23 +279,39 @@ public class GameManager : NetworkBehaviour {
         while(gameRun) {
 
             //VOYANTE
-			if(refVoyante.playerRef() != null)
-            {
+			if(refVoyante.playerRef() != null) {
+                BaseRole _refVoyante = refVoyante.playerRef().GetComponent<BaseRole>();
+
                 MessageToPlayers("MJ : La voyante choisi une personne pour connaitre son rôle");
-				BaseRole _refVoyante = refVoyante.playerRef().GetComponent<BaseRole>();
                 refVoyante.playerRef().yourTurn = true;
                 _refVoyante.PlayTurn();
 				yield return new WaitUntil(() => _refVoyante.IsReady());
+                MessageToPlayers("VOYANTE : La voyante a sondé : " + _refVoyante.GetSelectedPlayer().GetComponent<BaseRole>().ToString());
                 refVoyante.playerRef().yourTurn = false;
+                ResetVote();
             }
 
             //LOUPS
-			if(wolvesList.Count > 0)
-            {
+			if(wolvesList.Count > 0) {
                 MessageToPlayers("MJ : Les loups choissisent une personnes à tuer");
-				BaseRole _refWolf = wolvesList[0].playerRef().GetComponent<BaseRole>();
-				_refWolf.PlayTurn();
-				yield return new WaitUntil(() => _refWolf.IsReady());
+
+                foreach(PlayerInfo p in wolvesList) {
+                    BaseRole _refWolf = p.playerRef().GetComponent<BaseRole>();
+                    p.playerRef().yourTurn = true;
+                    _refWolf.PlayTurn();
+                }
+
+                foreach (PlayerInfo p in wolvesList) {
+                    BaseRole _refWolf = p.playerRef().GetComponent<BaseRole>();
+                    yield return new WaitUntil(() => _refWolf.IsReady());
+                }
+
+                foreach(PlayerInfo p in wolvesList) {
+                    p.playerRef().yourTurn = false;
+                }
+
+                //AddVictim(GetMostVote());
+                ResetVote();
             }
 
             //SORCIÈRE
@@ -341,101 +331,107 @@ public class GameManager : NetworkBehaviour {
 			yield return new WaitForSeconds(4f);
 
             //FIN DE LA NUIT
+
+            //TUERIE DES VICTIMES
 			if(victimsList.Count > 0) {
                 turnIssue = TurnIssue.VICTIMS;
 				FireForPlayers ();
 
-				foreach (PlayerInfo v in victimsList)
-                {
-                    BaseRole _refVictim = v.playerRef().GetComponent<BaseRole>();
-
-					if (v.Equals(refSorciere))
-						refSorciere.setPlayerRef(null);
-
-					if (v.Equals(refChasseur))
-						refChasseur.setPlayerRef(null);
-
-					if (v.Equals(refCupidon))
-						refCupidon.setPlayerRef(null);
-
-					if (v.Equals(refVoyante))
-						refVoyante.setPlayerRef(null);
-
-					_refVictim.Die();
-					v.playerRef ().RpcUpdateChatBRole (v.pseudo + " [Ghost - " + _refVictim.GetType () + "]");
-					v.playerRef().RpcChangeFireColor (TurnIssue.DEAD);
-
-					ghostsList.Add (v);
-
-					MessageToPlayers("MJ : " + v.playerRef().pseudo + " est retrouvé mort. C'était : " + _refVictim.GetType());
-
-					if(_refVictim.lover != null) {
-						BaseRole _refLover = _refVictim.lover.GetComponent<BaseRole> ();
-						Player _refLoverP = _refLover.GetComponent<Player> ();
-						Debug.Log("Son amour apporta quelqu'un dans la mort.");
-
-						MessageToPlayers ("MJ : Son amour apporta quelqu'un dans la mort.");
-						MessageToPlayers("MJ : " + _refLoverP.pseudo + " est retrouvé mort. C'était : " + _refLover.GetType());
-
-						_refVictim.SetLover(null);
-						_refLover.SetLover (null);
-
-						_refLover.Die();
-						_refLoverP.RpcUpdateChatBRole (_refLoverP.pseudo + " [Ghost - " + _refLover.GetType () + "]");
-						_refLoverP.RpcChangeFireColor (TurnIssue.DEAD);
-
-						ghostsList.Add (new PlayerInfo(_refLoverP.GetComponent<NetworkIdentity>().netId, _refLoverP.pseudo));
-
-					}
-                }
+				foreach (PlayerInfo p in victimsList)
+                    Kill(p);
 
 				victimsList.Clear ();
             }
             else
-            /*foreach (PlayerInfo g in playersList)
-            {
-					g.playerRef().yourTurn = true;
-            }*/
-
-            {
                 MessageToPlayers("MJ :  Il n'y a aucun mort cette nuit! gg wp.");
-                Debug.Log("{MORT} Il n'y a aucun mort cette nuit! gg wp");
+
+            GameEndCheck(ref gameRun);
+
+            //PHASE DU JOUR (VOTE DU VILLAGE)
+            if(gameRun) {
+                foreach (PlayerInfo g in playersList)
+                    g.playerRef().yourTurn = true;
+
+                yield return new WaitForSeconds(10f);
+
+                /*for (int i = 0; i < playersList.Count; i++){
+                    Debug.Log(playersList[i].pseudo + " vote: " + playersList[i].playerRef().vote);
+                }*/
+
+                GameObject mostVotedPlayer = GetMostVote();
+                Kill(new PlayerInfo(mostVotedPlayer.GetComponent<NetworkIdentity>().netId, mostVotedPlayer.GetComponent<Player>().pseudo));
             }
 
-            Debug.Log(playersList.Count + " " + wolvesList.Count);
-            Debug.Log("Players: " + playersList.Count + ", Wolves: " + wolvesList.Count);
-            
-            yield return new WaitForSeconds(30f);
+            GameEndCheck(ref gameRun);
 
-            for (int i = 0; i < playersList.Count; i++)
-            {
-				Debug.Log(playersList[i].pseudo + " vote: " + playersList[i].playerRef().vote);
-            }
-
-            if (wolvesList.Count <= 0) {
-                MessageToPlayers("VILLAGEOIS GAGNENT!");
-                Debug.Log("VILLAGEOIS GAGNENT!");
-                gameRun = false;
-            }
-			else if(playersList.Count == wolvesList.Count) {
-                MessageToPlayers("MJ :  LOUPS GAGNENT!");
-                Debug.Log("LOUPS GAGNENT!");
-                gameRun = false;
-            }
-            
-            foreach (PlayerInfo g in playersList)
-            {
+            foreach (PlayerInfo g in playersList) {
 				g.playerRef().yourTurn = false;
 				g.playerRef().prevVote = -1;
             }
 
-            if (turnIssue != TurnIssue.NO_VICTIMS)
-            {
+            if (turnIssue != TurnIssue.NO_VICTIMS) {
                 turnIssue = TurnIssue.NO_VICTIMS;
 				FireForPlayers ();
             }
         }
     }
+
+    void Kill(PlayerInfo p) {
+        BaseRole _refVictim = p.playerRef().GetComponent<BaseRole>();
+
+        if (p.Equals(refSorciere))
+            refSorciere.setPlayerRef(null);
+
+        if (p.Equals(refChasseur))
+            refChasseur.setPlayerRef(null);
+
+        if (p.Equals(refCupidon))
+            refCupidon.setPlayerRef(null);
+
+        if (p.Equals(refVoyante))
+            refVoyante.setPlayerRef(null);
+
+        _refVictim.Die();
+        p.playerRef().RpcUpdateChatBRole(p.pseudo + " [Ghost - " + _refVictim.GetType() + "]");
+        p.playerRef().RpcChangeFireColor(TurnIssue.DEAD);
+
+        ghostsList.Add(p);
+
+        MessageToPlayers("MJ : " + p.playerRef().pseudo + " est retrouvé mort. Il était " + _refVictim.GetType());
+
+        if (_refVictim.lover != null) {
+            BaseRole _refLover = _refVictim.lover.GetComponent<BaseRole>();
+            Player _refLoverP = _refLover.GetComponent<Player>();
+
+            MessageToPlayers("MJ : Son amour apporta quelqu'un dans la mort.");
+            MessageToPlayers("MJ : " + _refLoverP.pseudo + " est retrouvé mort. Il était " + _refLover.GetType());
+
+            _refVictim.SetLover(null);
+            _refLover.SetLover(null);
+
+            _refLover.Die();
+            _refLoverP.RpcUpdateChatBRole(_refLoverP.pseudo + " [Ghost - " + _refLover.GetType() + "]");
+            _refLoverP.RpcChangeFireColor(TurnIssue.DEAD);
+
+            ghostsList.Add(new PlayerInfo(_refLoverP.GetComponent<NetworkIdentity>().netId, _refLoverP.pseudo));
+        }
+    }
+
+    void GameEndCheck(ref bool gameRun) {
+        if (wolvesList.Count <= 0) {
+            MessageToPlayers("MJ : VILLAGEOIS GAGNENT!");
+            gameRun = false;
+        }
+        else if (playersList.Count == wolvesList.Count) {
+            MessageToPlayers("MJ :  LOUPS GAGNENT!");
+            gameRun = false;
+        }
+        else if (playersList.Count == 2 && playersList[0].playerRef().GetComponent<BaseRole>().lover != null) {
+            MessageToPlayers("MJ : LE COUPLE GAGNE GGGGGGGGGGGGGG!!!!");
+            gameRun = false;
+        }
+    }
+
 		
     public void MessageToPlayers(string Msg)
 	{
@@ -460,4 +456,25 @@ public class GameManager : NetworkBehaviour {
 			p.playerRef().RpcChangeFireColor(turnIssue);
 		}
 	}
+
+    public GameObject GetMostVote() {
+        int mostVote = -1;
+        Player mostVotedPlayer = null;
+
+        foreach(PlayerInfo p in playersList) {
+            if(p.playerRef().vote > mostVote) {
+                mostVote = p.playerRef().vote;
+                mostVotedPlayer = p.playerRef();
+            }
+        }
+
+        if(mostVotedPlayer)
+            return mostVotedPlayer.gameObject;
+        return null;
+    }
+
+    void ResetVote() {
+        foreach (PlayerInfo p in playersList)
+            p.playerRef().vote = 0;
+    }
 }

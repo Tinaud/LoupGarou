@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.Networking;
-
+using System.Collections;
 
 public class Loup : BaseRole {
 
@@ -9,30 +9,27 @@ public class Loup : BaseRole {
     }
 
     public override void PlayTurn() {
-        Debug.Log("[LOUP] Les loups font leur choix.");
-
-        players = GameManager.instance.GetPlayers();
-
         ready = false;
-        int rand;
+        selectedPlayer = null;
 
-        do
-            rand = Random.Range(0, players.Count);
-        while (players[rand].GetComponent<Loup>());
+        GameManager.instance.MessageToPlayers("MJ : TOUR DES LOUPS");
 
-        selectedPlayer = players[rand];
-		CmdAddVictim(selectedPlayer);
-
+        //StartCoroutine(WaitForChoice());
         ready = true;
     }
 
-	[Command]
-	void CmdAddVictim(GameObject _v) {
-		GameManager.instance.AddVictim (_v);
-	}
-
-	public override string ToString ()
-	{
+	public override string ToString () {
 		return string.Format ("[Loup]");
 	}
+
+    /*IEnumerator WaitForChoice() {
+        while (selectedPlayer == null) {
+            selectedPlayer = GameManager.instance.GetMostVote();
+            yield return new WaitForSeconds(0.5f);
+        }
+
+
+
+        ready = true;
+    }*/
 }

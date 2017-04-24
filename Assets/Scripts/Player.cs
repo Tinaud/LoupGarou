@@ -165,6 +165,7 @@ public class Player : NetworkBehaviour {
 						SelectButton.GetComponentInChildren<Button> ().onClick.AddListener (selectionPlayer);*/
                         CmdVote(Pla.id, prevVote);
                         prevVote = Pla.id;
+                        GetComponent<BaseRole>().SetSelectedPlayer(Pla.gameObject);
 					}
 				}
             }

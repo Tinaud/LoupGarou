@@ -17,16 +17,13 @@ abstract public class BaseRole : NetworkBehaviour {
 
         lover = null;
         selectedPlayer = null;
-        //StartCoroutine(GetComponent<Player>().Vote());
 	}
 
     public abstract void PlayTurn();
-    public virtual void Die() {
-        Debug.Log("{MORT} " + GetType() + " (id : " + GetComponent<Player>().ID() + ") est mouru!");
 
+    public virtual void Die() {
 		CmdRemovePlayer (gameObject);
         GetComponent<Player>().death = true;
-        /*Destroy(gameObject);*/
     }
 
 	[Command]
@@ -45,4 +42,11 @@ abstract public class BaseRole : NetworkBehaviour {
         lover = l;
     }
 
+    public GameObject GetSelectedPlayer() {
+        return selectedPlayer;
+    }
+
+    public void SetSelectedPlayer(GameObject g) {
+        selectedPlayer = g;
+    }
 }
