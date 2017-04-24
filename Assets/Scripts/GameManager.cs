@@ -184,9 +184,12 @@ public class GameManager : NetworkBehaviour {
 
 	public void AddPlayer(GameObject _p) {
 
-		PlayerInfo pInfo = new PlayerInfo (_p.GetComponent<NetworkIdentity> ().netId, _p.GetComponent<Player> ().pseudo);
 
-		playersList.Add(pInfo);
+		PlayerInfo pInfo = new PlayerInfo (_p.GetComponent<NetworkIdentity> ().netId, _p.GetComponent<Player> ().pseudo);
+		pInfo.playerRef().vote = 0;
+
+
+        playersList.Add(pInfo);
 		nbrPlayers = playersList.Count;
 
 		RearrangePlayers();
@@ -265,6 +268,24 @@ public class GameManager : NetworkBehaviour {
         victimsList.Clear();
     }
 
+    public void Vote(int id, int pId)
+    {
+       if (pId != -1)
+        {
+            for (int i = 0; i < playersList.Count; i++)
+				if (playersList[i].playerRef().id == pId)
+                {
+					playersList[i].playerRef().vote--;
+					MessageToPlayers(playersList[i].pseudo + "Est choisi");
+                }
+        }
+        for (int i = 0; i < playersList.Count; i++)
+			if (playersList[i].playerRef().id == id) { 
+				playersList[i].playerRef().vote++;
+				MessageToPlayers(playersList[i].pseudo + "Est choisi");
+            }
+    }
+
     IEnumerator GameTurn() {
         //First Turn only
         yield return new WaitForSeconds(2f);
@@ -308,11 +329,13 @@ public class GameManager : NetworkBehaviour {
             {
                 turnIssue = TurnIssue.WITCH;
 				FireForPlayers ();
-                MessageToPlayers("MJ : La sorcière choisi de sauver ou de tuer une personne");
 
+                MessageToPlayers("MJ : La sorcière choisi de sauver ou de tuer une personne");
 				BaseRole _refSorciere = refSorciere.playerRef().GetComponent<BaseRole>();
 				_refSorciere.PlayTurn();
+
 				yield return new WaitUntil(() => _refSorciere.IsReady());
+				refSorciere.playerRef().yourTurn = false;
             }
 
 			yield return new WaitForSeconds(4f);
@@ -369,16 +392,27 @@ public class GameManager : NetworkBehaviour {
 				victimsList.Clear ();
             }
             else
+            /*foreach (PlayerInfo g in playersList)
+            {
+					g.playerRef().yourTurn = true;
+            }*/
+
             {
                 MessageToPlayers("MJ :  Il n'y a aucun mort cette nuit! gg wp.");
                 Debug.Log("{MORT} Il n'y a aucun mort cette nuit! gg wp");
             }
-                
-            Debug.Log("Players: " + playersList.Count + ", Wolves: " + wolvesList.Count);
 
-            yield return new WaitForSeconds(4f);
+            Debug.Log(playersList.Count + " " + wolvesList.Count);
+            Debug.Log("Players: " + playersList.Count + ", Wolves: " + wolvesList.Count);
             
-			if (wolvesList.Count <= 0) {
+            yield return new WaitForSeconds(30f);
+
+            for (int i = 0; i < playersList.Count; i++)
+            {
+				Debug.Log(playersList[i].pseudo + " vote: " + playersList[i].playerRef().vote);
+            }
+
+            if (wolvesList.Count <= 0) {
                 MessageToPlayers("VILLAGEOIS GAGNENT!");
                 Debug.Log("VILLAGEOIS GAGNENT!");
                 gameRun = false;
@@ -388,13 +422,18 @@ public class GameManager : NetworkBehaviour {
                 Debug.Log("LOUPS GAGNENT!");
                 gameRun = false;
             }
+            
+            foreach (PlayerInfo g in playersList)
+            {
+				g.playerRef().yourTurn = false;
+				g.playerRef().prevVote = -1;
+            }
 
             if (turnIssue != TurnIssue.NO_VICTIMS)
             {
                 turnIssue = TurnIssue.NO_VICTIMS;
 				FireForPlayers ();
             }
-            
         }
     }
 		
@@ -403,6 +442,9 @@ public class GameManager : NetworkBehaviour {
 		foreach (PlayerInfo p in playersList)
         {
 			p.playerRef().RpcAddMsg(Msg);
+
+			/*if(p.playerRef().yourTurn)
+				p.playerRef().RpcAddMsg(Msg);*/
         }
 
 		foreach (PlayerInfo p in ghostsList)

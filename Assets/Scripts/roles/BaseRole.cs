@@ -25,6 +25,7 @@ abstract public class BaseRole : NetworkBehaviour {
         Debug.Log("{MORT} " + GetType() + " (id : " + GetComponent<Player>().ID() + ") est mouru!");
 
 		CmdRemovePlayer (gameObject);
+        GetComponent<Player>().death = true;
         /*Destroy(gameObject);*/
     }
 
