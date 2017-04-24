@@ -163,7 +163,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1403625870949238}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: -0.5, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 4061703847307706}
@@ -204,13 +204,13 @@ Transform:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1365167214507528}
-  m_LocalRotation: {x: 0.7071068, y: 0, z: 0.7071068, w: 0}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalRotation: {x: 0.5, y: 0.5, z: 0.5, w: 0.5}
+  m_LocalPosition: {x: 0, y: -0.5, z: -0.7}
   m_LocalScale: {x: 0.5500005, y: 0.55000097, z: 0.20000024}
   m_Children: []
   m_Father: {fileID: 4175002431673134}
   m_RootOrder: 1
-  m_LocalEulerAnglesHint: {x: 0, y: 90, z: 180}
+  m_LocalEulerAnglesHint: {x: 0, y: 90, z: 90}
 --- !u!20 &20119214041860348
 Camera:
   m_ObjectHideFlags: 1
@@ -219,8 +219,8 @@ Camera:
   m_GameObject: {fileID: 1716554648379280}
   m_Enabled: 1
   serializedVersion: 2
-  m_ClearFlags: 2
-  m_BackGroundColor: {r: 0.05103806, g: 0.0770137, b: 0.11764705, a: 1}
+  m_ClearFlags: 1
+  m_BackGroundColor: {r: 1, g: 1, b: 1, a: 1}
   m_NormalizedViewPortRect:
     serializedVersion: 2
     x: 0
@@ -426,8 +426,11 @@ MonoBehaviour:
   Capsule: {fileID: 1358926340777076}
   PlayerCamera: {fileID: 20119214041860348}
   id: 0
+  vote: 0
+  prevVote: -1
   pseudo: 
   yourTurn: 0
+  death: 0
 --- !u!114 &114599327569944294
 MonoBehaviour:
   m_ObjectHideFlags: 1

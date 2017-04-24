@@ -39,7 +39,7 @@ public class GameManager : NetworkBehaviour {
 		}
 	}
 
-    public enum TurnIssue { NO_VICTIMS, VICTIMS, WITCH, DEAD };
+    public enum TurnIssue { NO_VICTIMS, VICTIMS, WITCH, DEAD, NO_TURN, TURN };
 
 	[SyncVar]
     bool gameStarted;
@@ -215,7 +215,7 @@ public class GameManager : NetworkBehaviour {
 
         foreach (PlayerInfo g in playersList) {
     
-            Vector3 pos = new Vector3(fireCampPos.x + 10f * Mathf.Cos(angle), 0, fireCampPos.z + 10f * Mathf.Sin(angle));
+            Vector3 pos = new Vector3(fireCampPos.x + 10f * Mathf.Cos(angle), -0.5f, fireCampPos.z + 10f * Mathf.Sin(angle));
             Quaternion rotation = Quaternion.LookRotation(fireCampPos - pos);
 
             g.playerRef().RpcUpdatePosition(pos, rotation);
