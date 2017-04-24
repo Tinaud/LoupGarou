@@ -15,4 +15,9 @@ public class Voyante : BaseRole {
 
         ready = true;
     }
+	public override string ToString ()
+	{
+		return string.Format ("[Voyante]");
+	}
+
 }

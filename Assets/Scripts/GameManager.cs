@@ -70,10 +70,7 @@ public class GameManager : NetworkBehaviour {
 		
 		gameStarted = false;
 		nbrPlayers = 0;
-		if (NetworkManager.singleton.matchMaker != null)
-			nbrPlayersMax = NetworkManager.singleton.matchSize;
-		else
-			nbrPlayersMax = (uint)NetworkManager.singleton.maxConnections;
+		nbrPlayersMax = NetworkManager.singleton.matchSize;
 
 		refVoyante = new PlayerInfo ();
 		refChasseur = new PlayerInfo ();
@@ -109,9 +106,8 @@ public class GameManager : NetworkBehaviour {
 		/*if(nbrPlayers >= nbrPlayersMax && !gameStarted)
 			CmdStartGame();*/
 	}
-
-	[Command]
-    void CmdStartGame() {
+		
+    void StartGame() {
 		Debug.Log ("Game started");
         gameStarted = true;
 
@@ -128,38 +124,32 @@ public class GameManager : NetworkBehaviour {
             switch (roles[r]) {
                 case "Villageois":
                     g.playerRef.gameObject.AddComponent<Villageois>();
-                    g.playerRef.RpcUpdateChatB("Villageois");
                     break;
                 case "Loup-Garou":
 					g.playerRef.gameObject.AddComponent<Loup>();
-                    g.playerRef.RpcUpdateChatB("Loup");
                     wolvesList.Add(g);
                     break;
                 case "Sorcière":
 					g.playerRef.gameObject.AddComponent<Sorciere>();
-                    g.playerRef.RpcUpdateChatB("Sorciere");
                     refSorciere = g;
                     break;
                 case "Cupidon":
 					g.playerRef.gameObject.AddComponent<Cupidon>();
-                    g.playerRef.RpcUpdateChatB("Cupidon");
                     refCupidon = g;
                     break;
                 case "Chasseur":
 					g.playerRef.gameObject.AddComponent<Chasseur>();
-                    g.playerRef.RpcUpdateChatB("Chasseur");
                     refChasseur = g;
                     break;
                 case "Voyante":
 					g.playerRef.gameObject.AddComponent<Voyante>();
-                    g.playerRef.RpcUpdateChatB("Voyante");
                     refVoyante = g;
                     break;
                 default:
                     Debug.Log("Unknown role :(");
                     break;
             }
-
+			g.playerRef.RpcUpdateChatBRole("[" + roles[r] +"]");
             roles.RemoveAt(r);
         }
 
@@ -190,7 +180,7 @@ public class GameManager : NetworkBehaviour {
 		Debug.Log ("players connected " + nbrPlayers + "/" + nbrPlayersMax);
 
 		if (nbrPlayers == nbrPlayersMax && !gameStarted)
-			CmdStartGame ();
+			StartGame ();
 	}
 
     void RearrangePlayers() {
@@ -228,8 +218,15 @@ public class GameManager : NetworkBehaviour {
         return gameStarted;
     }
 
-	[Command]
-	public void CmdRemoveWolf(GameObject _w) {
+	public void RemovePlayer(GameObject _w) {
+		PlayerInfo pInfo = new PlayerInfo ();
+		pInfo.playerRef = _w.GetComponent<Player> ();
+		pInfo.netId = _w.GetComponent<NetworkIdentity> ().netId;
+
+		playersList.Remove(pInfo);
+	}
+		
+	public void RemoveWolf(GameObject _w) {
 		PlayerInfo pInfo = new PlayerInfo ();
 		pInfo.playerRef = _w.GetComponent<Player> ();
 		pInfo.netId = _w.GetComponent<NetworkIdentity> ().netId;
@@ -244,9 +241,8 @@ public class GameManager : NetworkBehaviour {
 
 		victimsList.Add(pInfo);
     }
-
-	[Command]
-    public void CmdSaveVictim() {
+		
+    public void SaveVictim() {
 		victimsList.Clear();
     }
 
@@ -305,8 +301,8 @@ public class GameManager : NetworkBehaviour {
 					_refVictim.Die();
 					MessageToPlayers("MJ : " + v.playerRef.pseudo + " est retrouvé mort. C'était : " + _refVictim.GetType());
                 }
-                if (victimsList != null)
-				    victimsList.Clear();
+				if (victimsList != null)
+					victimsList.Clear ();
             }
             else
             {

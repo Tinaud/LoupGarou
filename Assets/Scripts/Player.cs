@@ -4,6 +4,7 @@ using UnityEngine.Networking;
 using UnityEngine.Networking.NetworkSystem;
 using UnityEngine.UI;
 
+
 public class Player : NetworkBehaviour {
 	
 	[SerializeField]
@@ -37,21 +38,18 @@ public class Player : NetworkBehaviour {
 
 	public override void OnStartLocalPlayer() {
 
-		changeColor (Color.red);
+
 		CmdSetup ();
 
 		GameObject ChatB = Instantiate (ChatBoxPrefab, new Vector3 (0, 0, 0), Quaternion.identity);
 		ChatB.transform.SetParent (PlayerCamera.transform);
 		CurrentChat = ChatB.GetComponent<ChatBox> ();
 		CurrentChat.setPlayer (this);
+		CurrentChat.WelcomeText.text = "Bienvenue à " + NetworkManager.singleton.matchName;
 
 		Cursor.lockState = CursorLockMode.Locked;
 	}
-
-	public override void OnStartClient() {
 		
-	}
-
 	[Command]
 	void CmdSetup() {
 		id = nextId++;
@@ -61,16 +59,19 @@ public class Player : NetworkBehaviour {
 		pseudo = gameManager.nom [x];
 		gameManager.nom.RemoveAt (x);
 
+		RpcChangeColor (Color.red);
+
 		gameManager.AddPlayer (gameObject);
 	}
 
     [ClientRpc]
-    public void RpcUpdateChatB(string role)
+    public void RpcUpdateChatBRole(string role)
     {
         if (!isLocalPlayer)
             return;
+		
         Debug.Log("Nouveau : " + role);
-        GameObject.Find("Role").GetComponent<Text>().text = role;
+		CurrentChat.RoleText.GetComponent<Text>().text = role;
     }
 
     void Start() {
@@ -85,18 +86,9 @@ public class Player : NetworkBehaviour {
     {
         /*if (!isLocalPlayer)
             return;*/
-        GetComponent<MeshRenderer> ().material.color = c;
+        Capsule.GetComponent<MeshRenderer> ().material.color = c;
+		Capsule.GetComponentInChildren<MeshRenderer> ().material.color = c;
 	}
-
-    [Command]
-    public void CmdVictims(GameObject selectedPlayer)
-    {
-        if (!isLocalPlayer)
-            return;
-        //Appel server pour l'envoie de la victime
-        gameManager.AddVictim(selectedPlayer);
-    }
-
 
 
 	[Command]

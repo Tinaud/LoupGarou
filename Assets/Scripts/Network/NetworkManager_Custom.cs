@@ -7,7 +7,7 @@ using UnityEngine.Networking.Match;
 using UnityEngine.Networking.Types;
 
 using UnityEngine.UI;
-using System.Text.RegularExpressions;
+
 
 public class NetworkManager_Custom : NetworkManager {
 		// Singleton 
@@ -30,14 +30,12 @@ public class NetworkManager_Custom : NetworkManager {
 		NetworkServer.AddPlayerForConnection (conn, playerGO, playerControllerId);
 	}
 
-	public void CreateRoom () {
-		string matchName = GameObject.Find("InputFieldRoomName").transform.FindChild("Text").GetComponent<Text>().text;
-		matchName = Regex.IsMatch(matchName, @"[a-zA-Z0-9_]{3,16}$") ? matchName : GameObject.Find ("InputFieldRoomName").transform.FindChild ("Placeholder").GetComponent<Text> ().text;
-
-		uint matchSize = (uint)int.Parse(GameObject.Find("RoomSizeNumber").transform.FindChild("Text").GetComponent<Text>().text);
-		matchSize = matchSize < 2 ? 2 : matchSize > 20 ? 20 : matchSize;
+	public void CreateRoom (string matchName, uint matchSize) {
 
 		bool matchAdvertise = true;
+
+		singleton.matchName = matchName;
+		singleton.matchSize = matchSize;
 
 		Debug.Log (matchName + ", " + matchSize + ", " + matchAdvertise);
 		NetworkManager.singleton.matchMaker.CreateMatch (matchName, matchSize, matchAdvertise, "", "", "", 0, 0, NetworkManager.singleton.OnMatchCreate);
@@ -48,8 +46,12 @@ public class NetworkManager_Custom : NetworkManager {
 		NetworkManager.singleton.StartClient ();
 	}
 
-	public void HostGame ( int maxConn ) {
-		maxConnections = maxConn;
+	public void HostGame ( string name, int maxConn, string ipAdd ) {
+		singleton.matchName = name;
+		singleton.matchSize = (uint) maxConn;
+		singleton.maxConnections = maxConn;
+		singleton.networkAddress = ipAdd;
+
 		NetworkManager.singleton.StartHost(matchInfo);
 	}
 

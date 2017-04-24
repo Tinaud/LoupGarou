@@ -1,15 +1,19 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Networking;
 
-abstract public class BaseRole : MonoBehaviour {
+abstract public class BaseRole : NetworkBehaviour {
 
     protected bool ready;
     protected GameObject selectedPlayer;
+
+	[SyncVar]
     public GameObject lover;
+
     public List<GameObject> players = new List<GameObject>();
 
     public virtual void Start () {
-		players = GameManager.instance.GetPlayers();
+		players =  GameManager.instance.GetPlayers();
 
         lover = null;
         selectedPlayer = null;
@@ -26,12 +30,17 @@ abstract public class BaseRole : MonoBehaviour {
             lover.GetComponent<BaseRole>().Die();
         }
 
-        if (GetComponent<Loup>())
-            GameManager.instance.CmdRemoveWolf(gameObject);
-        GetComponent<Player>().RpcChangeColor(Color.black);
-        players.Remove(gameObject);
+		CmdRemovePlayer (gameObject);
         /*Destroy(gameObject);*/
     }
+
+	[Command]
+	void CmdRemovePlayer(GameObject _p) {
+		if (GetComponent<Loup>())
+			GameManager.instance.RemoveWolf (_p);
+		else
+			GameManager.instance.RemovePlayer (_p);
+	}
 
     public bool IsReady() {
         return ready;
@@ -40,4 +49,5 @@ abstract public class BaseRole : MonoBehaviour {
     public void SetLover(GameObject l) {
         lover = l;
     }
+
 }

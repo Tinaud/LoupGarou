@@ -32,4 +32,9 @@ public class Cupidon : BaseRole {
         if (selectedPlayer!= null && secondSelected != null)
             ready = true;
     }
+
+	public override string ToString ()
+	{
+		return string.Format ("[Cupidon]");
+	}
 }

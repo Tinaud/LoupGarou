@@ -17,4 +17,9 @@ public class Chasseur : BaseRole {
 
         base.Die();
     }
+
+	public override string ToString ()
+	{
+		return string.Format ("[Chasseur]");
+	}
 }

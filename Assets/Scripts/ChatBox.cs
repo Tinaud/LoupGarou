@@ -8,6 +8,8 @@ public class ChatBox : NetworkBehaviour
 {
     //public ScrollRect ChatZone;
     public InputField TextZone;
+	public Text WelcomeText;
+	public Text RoleText;
     public GameObject ChatZone;
     public GameObject TextPrefab;
 

@@ -768,6 +768,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   TextZone: {fileID: 114166548616189796}
+  WelcomeText: {fileID: 114444457385215512}
+  RoleText: {fileID: 114516116111232446}
   ChatZone: {fileID: 1497858959754248}
   TextPrefab: {fileID: 1473947491982416, guid: aad7b47c0a6852f46812a82ed46d6b0a, type: 2}
 --- !u!114 &114873294437955152
@@ -1171,7 +1173,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: -0.0000034496188}
+  m_AnchoredPosition: {x: 0, y: 0.000008568168}
   m_SizeDelta: {x: 0, y: 22}
   m_Pivot: {x: 0, y: 1}
 --- !u!224 &224572377217009516

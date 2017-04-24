@@ -1,4 +1,6 @@
 ﻿using UnityEngine;
+using UnityEngine.Networking;
+
 
 public class Loup : BaseRole {
 
@@ -17,8 +19,18 @@ public class Loup : BaseRole {
         while (players[rand].GetComponent<Loup>());
 
         selectedPlayer = players[rand];
-        GetComponent<Player>().CmdVictims(selectedPlayer);
+		CmdAddVictim(selectedPlayer);
 
         ready = true;
     }
+
+	[Command]
+	void CmdAddVictim(GameObject _v) {
+		GameManager.instance.AddVictim (_v);
+	}
+
+	public override string ToString ()
+	{
+		return string.Format ("[Loup]");
+	}
 }

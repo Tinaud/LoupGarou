@@ -25,4 +25,9 @@ public class Sorciere : BaseRole {
 
         ready = true;
     }
+
+	public override string ToString ()
+	{
+		return string.Format ("[Sorcière]");
+	}
 }
