@@ -21,7 +21,12 @@ public class Player : NetworkBehaviour {
 	[SyncVar]
     public int id;
 
-	[SyncVar]
+    [SyncVar]
+    public int vote;
+    [SyncVar]
+    public int prevVote = -1;
+
+    [SyncVar]
     public string pseudo;
 
 	GameManager gameManager;
@@ -35,8 +40,10 @@ public class Player : NetworkBehaviour {
 
     [SyncVar]
     public bool yourTurn = false;
+    [SyncVar]
+    public bool death = false;
 
-	public override void OnStartLocalPlayer() {
+    public override void OnStartLocalPlayer() {
 
 
 		CmdSetup ();
@@ -108,7 +115,7 @@ public class Player : NetworkBehaviour {
 
     void Update() {
 
-		if (!isLocalPlayer)
+		if (!isLocalPlayer || death)
 			return;
 
 		transform.rotation = Quaternion.Slerp (transform.rotation, targetRotation, Time.deltaTime * 2.0f);
@@ -117,21 +124,29 @@ public class Player : NetworkBehaviour {
         {
             RaycastHit hit;
 			//Ray ray = PlayerCamera.ScreenPointToRay(Input.mousePosition);
-			if (Physics.Raycast(PlayerCamera.transform.position, PlayerCamera.transform.forward, out hit))
+			if (Physics.Raycast(PlayerCamera.transform.position, PlayerCamera.transform.forward, out hit) && yourTurn)
             {
                 Destroy(SelectButton);
                 SelectButton = null;
 				Pla = hit.transform.gameObject.GetComponentInParent<Player>();
 				if (Pla != null) {
 					if (Pla.id != id) {
-						SelectButton = Instantiate ((GameObject)Resources.Load ("PlayerSelect"), new Vector3 (0, 0, 0), Quaternion.identity);
+                        /*SelectButton = Instantiate ((GameObject)Resources.Load ("PlayerSelect"), new Vector3 (0, 0, 0), Quaternion.identity);
 						SelectButton.transform.SetParent (PlayerCamera.transform);
 						SelectButton.GetComponentInChildren<Text> ().text = "Player " + Pla.pseudo;
-						SelectButton.GetComponentInChildren<Button> ().onClick.AddListener (selectionPlayer);
+						SelectButton.GetComponentInChildren<Button> ().onClick.AddListener (selectionPlayer);*/
+                        CmdVote(Pla.id, prevVote);
+                        prevVote = Pla.id;
 					}
 				}
             }
         }
+    }
+
+    [Command]
+    public void CmdVote(int id, int pV)
+    {
+        GameManager.instance.Vote(id, pV);
     }
 
     void selectionPlayer()

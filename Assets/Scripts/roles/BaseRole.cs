@@ -30,7 +30,8 @@ abstract public class BaseRole : NetworkBehaviour {
             lover.GetComponent<BaseRole>().Die();
         }
 
-		CmdRemovePlayer (gameObject);
+        GetComponent<Player>().death = true;
+        CmdRemovePlayer (gameObject);
         /*Destroy(gameObject);*/
     }
 
