@@ -36,12 +36,23 @@ public class Player : NetworkBehaviour {
     [SyncVar]
     public bool yourTurn = false;
 
-	public override void OnStartLocalPlayer() {
+    void Start()
+    {
+        if (!isLocalPlayer)
+        {
+            PlayerCamera.gameObject.SetActive(false);
+            Capsule.GetComponent<MouseLook>().enabled = false;
+        }
+    }
 
+    public override void OnStartLocalPlayer() {
+        PlayerCamera.enabled = true;
+        PlayerCamera.tag = "MainCamera";
 
 		CmdSetup ();
+        
 
-		GameObject ChatB = Instantiate (ChatBoxPrefab, new Vector3 (0, 0, 0), Quaternion.identity);
+        GameObject ChatB = Instantiate (ChatBoxPrefab, new Vector3 (0, 0, 0), Quaternion.identity);
 		ChatB.transform.SetParent (PlayerCamera.transform);
 		CurrentChat = ChatB.GetComponent<ChatBox> ();
 		CurrentChat.setPlayer (this);
@@ -55,11 +66,11 @@ public class Player : NetworkBehaviour {
 		id = nextId++;
 		gameManager = GameManager.instance;
 
-		int x = Random.Range (0, gameManager.nom.Count);
+        RpcChangeColor(Color.red);
+
+        int x = Random.Range (0, gameManager.nom.Count);
 		pseudo = gameManager.nom [x];
 		gameManager.nom.RemoveAt (x);
-
-		RpcChangeColor (Color.red);
 
 		gameManager.AddPlayer (gameObject);
 	}
@@ -74,24 +85,28 @@ public class Player : NetworkBehaviour {
 		CurrentChat.RoleText.GetComponent<Text>().text = role;
     }
 
-    void Start() {
-		if (!isLocalPlayer) {
-			PlayerCamera.enabled = false;
-			Capsule.GetComponent<MouseLook> ().enabled = false;
-		}
-    }
-
     [ClientRpc]
     public void RpcChangeColor(Color c)
     {
-        /*if (!isLocalPlayer)
-            return;*/
+        if (!isLocalPlayer)
+            return;
         Capsule.GetComponent<MeshRenderer> ().material.color = c;
-		Capsule.GetComponentInChildren<MeshRenderer> ().material.color = c;
+		Capsule.transform.Find("Arm").GetComponent<MeshRenderer>().material.color = c;
 	}
 
 
-	[Command]
+    [ClientRpc]
+    public void RpcUpdatePosition(Vector3 pos, Quaternion rot)
+    {
+        if (!isLocalPlayer)
+            return;
+
+        transform.position = pos;
+        transform.rotation = rot;
+    }
+
+
+    [Command]
     public void CmdSendMsg(string Message)
     {
         //Appel server pour l'envoie du message

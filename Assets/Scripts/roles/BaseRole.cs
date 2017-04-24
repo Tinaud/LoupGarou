@@ -38,8 +38,8 @@ abstract public class BaseRole : NetworkBehaviour {
 	void CmdRemovePlayer(GameObject _p) {
 		if (GetComponent<Loup>())
 			GameManager.instance.RemoveWolf (_p);
-		else
-			GameManager.instance.RemovePlayer (_p);
+
+		GameManager.instance.RemovePlayer (_p);
 	}
 
     public bool IsReady() {
