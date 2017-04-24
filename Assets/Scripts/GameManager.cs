@@ -15,7 +15,12 @@ public class GameManager : NetworkBehaviour {
 		}
 
 		public Player playerRef() {
-			return NetworkServer.FindLocalObject (netId).GetComponent<Player>();
+			GameObject p = NetworkServer.FindLocalObject (netId);
+
+			if (p == null)
+				return null;
+
+			return p.GetComponent<Player> ();
 		}
 
 		public void setPlayerRef(Player p) {
@@ -152,6 +157,7 @@ public class GameManager : NetworkBehaviour {
                     break;
             }
 			g.playerRef().RpcUpdateChatBRole(g.pseudo + " [" + roles[r] +"]");
+            g.playerRef().yourTurn = false;
             roles.RemoveAt(r);
         }
 
@@ -171,7 +177,7 @@ public class GameManager : NetworkBehaviour {
 		RearrangePlayers();
 
 		if (nbrPlayers > 1)
-			MessageToPlayers (pInfo.ToString() + "is connected.");
+			MessageToPlayers (pInfo.ToString() + "is connected.", true);
 
 		if (nbrPlayers == nbrPlayersMax && !gameStarted)
 			StartGame ();
@@ -250,13 +256,11 @@ public class GameManager : NetworkBehaviour {
 				if (playersList[i].playerRef().id == pId)
                 {
 					playersList[i].playerRef().vote--;
-					MessageToPlayers(playersList[i].pseudo + "Est choisi");
                 }
         }
         for (int i = 0; i < playersList.Count; i++)
 			if (playersList[i].playerRef().id == id) { 
 				playersList[i].playerRef().vote++;
-				MessageToPlayers(playersList[i].pseudo + "Est choisi");
             }
     }
 
@@ -266,7 +270,7 @@ public class GameManager : NetworkBehaviour {
 
         //CUPIDON
 		if(refCupidon.playerRef() != null) {
-            MessageToPlayers("MJ : Cupidon choisi deux personnes qui tomberont amoureuse");
+            MessageToPlayers("MJ : Cupidon choisi deux personnes qui tomberont amoureuse", true);
 			BaseRole _refCupidon = refCupidon.playerRef().GetComponent<BaseRole>();
             refCupidon.playerRef().yourTurn = true;
             _refCupidon.PlayTurn();
@@ -282,18 +286,19 @@ public class GameManager : NetworkBehaviour {
 			if(refVoyante.playerRef() != null) {
                 BaseRole _refVoyante = refVoyante.playerRef().GetComponent<BaseRole>();
 
-                MessageToPlayers("MJ : La voyante choisi une personne pour connaitre son rôle");
+                MessageToPlayers("MJ : La voyante choisi une personne pour connaitre son rôle", true);
+
                 refVoyante.playerRef().yourTurn = true;
                 _refVoyante.PlayTurn();
 				yield return new WaitUntil(() => _refVoyante.IsReady());
-                MessageToPlayers("VOYANTE : La voyante a sondé : " + _refVoyante.GetSelectedPlayer().GetComponent<BaseRole>().ToString());
+                MessageToPlayers("VOYANTE : La voyante a sondé : " + _refVoyante.GetSelectedPlayer().GetComponent<BaseRole>().ToString(), true);
                 refVoyante.playerRef().yourTurn = false;
                 ResetVote();
             }
 
             //LOUPS
 			if(wolvesList.Count > 0) {
-                MessageToPlayers("MJ : Les loups choissisent une personnes à tuer");
+                MessageToPlayers("MJ : Les loups choissisent une personnes à tuer", true);
 
                 foreach(PlayerInfo p in wolvesList) {
                     BaseRole _refWolf = p.playerRef().GetComponent<BaseRole>();
@@ -320,7 +325,7 @@ public class GameManager : NetworkBehaviour {
                 turnIssue = TurnIssue.WITCH;
 				FireForPlayers ();
 
-                MessageToPlayers("MJ : La sorcière choisi de sauver ou de tuer une personne");
+                MessageToPlayers("MJ : La sorcière choisi de sauver ou de tuer une personne", true);
 				BaseRole _refSorciere = refSorciere.playerRef().GetComponent<BaseRole>();
 				_refSorciere.PlayTurn();
 
@@ -343,7 +348,7 @@ public class GameManager : NetworkBehaviour {
 				victimsList.Clear ();
             }
             else
-                MessageToPlayers("MJ :  Il n'y a aucun mort cette nuit! gg wp.");
+                MessageToPlayers("MJ :  Il n'y a aucun mort cette nuit! gg wp.", true);
 
             GameEndCheck(ref gameRun);
 
@@ -397,14 +402,14 @@ public class GameManager : NetworkBehaviour {
 
         ghostsList.Add(p);
 
-        MessageToPlayers("MJ : " + p.playerRef().pseudo + " est retrouvé mort. Il était " + _refVictim.GetType());
+        MessageToPlayers("MJ : " + p.playerRef().pseudo + " est retrouvé mort. Il était " + _refVictim.GetType(), true);
 
         if (_refVictim.lover != null) {
             BaseRole _refLover = _refVictim.lover.GetComponent<BaseRole>();
             Player _refLoverP = _refLover.GetComponent<Player>();
 
-            MessageToPlayers("MJ : Son amour apporta quelqu'un dans la mort.");
-            MessageToPlayers("MJ : " + _refLoverP.pseudo + " est retrouvé mort. Il était " + _refLover.GetType());
+            MessageToPlayers("MJ : Son amour apporta quelqu'un dans la mort.", true);
+            MessageToPlayers("MJ : " + _refLoverP.pseudo + " est retrouvé mort. Il était " + _refLover.GetType(), true);
 
             _refVictim.SetLover(null);
             _refLover.SetLover(null);
@@ -419,28 +424,28 @@ public class GameManager : NetworkBehaviour {
 
     void GameEndCheck(ref bool gameRun) {
         if (wolvesList.Count <= 0) {
-            MessageToPlayers("MJ : VILLAGEOIS GAGNENT!");
+            MessageToPlayers("MJ : VILLAGEOIS GAGNENT!", true);
             gameRun = false;
         }
         else if (playersList.Count == wolvesList.Count) {
-            MessageToPlayers("MJ :  LOUPS GAGNENT!");
+            MessageToPlayers("MJ :  LOUPS GAGNENT!", true);
             gameRun = false;
         }
         else if (playersList.Count == 2 && playersList[0].playerRef().GetComponent<BaseRole>().lover != null) {
-            MessageToPlayers("MJ : LE COUPLE GAGNE GGGGGGGGGGGGGG!!!!");
+            MessageToPlayers("MJ : LE COUPLE GAGNE GGGGGGGGGGGGGG!!!!", true);
             gameRun = false;
         }
     }
 
 		
-    public void MessageToPlayers(string Msg)
+    public void MessageToPlayers(string Msg, bool massif)
 	{
 		foreach (PlayerInfo p in playersList)
         {
-			p.playerRef().RpcAddMsg(Msg);
+			//p.playerRef().RpcAddMsg(Msg);
 
-			/*if(p.playerRef().yourTurn)
-				p.playerRef().RpcAddMsg(Msg);*/
+			if(p.playerRef().yourTurn || massif)
+				p.playerRef().RpcAddMsg(Msg);
         }
 
 		foreach (PlayerInfo p in ghostsList)
