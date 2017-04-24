@@ -42,7 +42,7 @@ public class Player : NetworkBehaviour {
 	FireLightScript fireCamp;
 
     [SyncVar]
-    public bool yourTurn = false;
+    public bool yourTurn = true;
     [SyncVar]
     public bool death = false;
 
@@ -58,6 +58,8 @@ public class Player : NetworkBehaviour {
     public override void OnStartLocalPlayer() {
         PlayerCamera.enabled = true;
         PlayerCamera.tag = "MainCamera";
+
+        yourTurn = true;
 
 		CmdSetup ();
 		fireCamp = GameObject.Find ("Campfire").GetComponent<FireLightScript> ();
@@ -129,7 +131,7 @@ public class Player : NetworkBehaviour {
     [Command]
     public void CmdSendMsg(string Message)
     {
-		gameManager.MessageToPlayers(Message);
+		gameManager.MessageToPlayers(Message, false);
     }
 		
 	[ClientRpc]
@@ -141,32 +143,39 @@ public class Player : NetworkBehaviour {
 		CurrentChat.ChatUpdate(Message);
     }
 
-    void Update() {
+    void Update()
+    {
 
-		if (!isLocalPlayer || death)
-			return;
+        if (!isLocalPlayer || death)
+            return;
 
-		transform.rotation = Quaternion.Slerp (transform.rotation, targetRotation, Time.deltaTime * 2.0f);
+        transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * 2.0f);
+
+        if (Input.GetKeyDown(KeyCode.T) || (Input.GetKeyDown(KeyCode.Return) && CurrentChat.TextZone.text == ""))
+            CurrentChat.GetComponentInChildren<InputField>().ActivateInputField();
+
         //Raycast pour savoir si on a toucher un joueur bon joueur
-		if (Input.GetMouseButtonDown(0))//&& yourTurn)
+        if (Input.GetMouseButtonDown(0))//&& yourTurn)
         {
             RaycastHit hit;
-			//Ray ray = PlayerCamera.ScreenPointToRay(Input.mousePosition);
-			if (Physics.Raycast(PlayerCamera.transform.position, PlayerCamera.transform.forward, out hit) && yourTurn)
+            //Ray ray = PlayerCamera.ScreenPointToRay(Input.mousePosition);
+            if (Physics.Raycast(PlayerCamera.transform.position, PlayerCamera.transform.forward, out hit) && yourTurn)
             {
                 Destroy(SelectButton);
                 SelectButton = null;
-				Pla = hit.transform.gameObject.GetComponentInParent<Player>();
-				if (Pla != null) {
-					if (Pla.id != id) {
+                Pla = hit.transform.gameObject.GetComponentInParent<Player>();
+                if (Pla != null)
+                {
+                    if (Pla.id != id)
+                    {
                         /*SelectButton = Instantiate ((GameObject)Resources.Load ("PlayerSelect"), new Vector3 (0, 0, 0), Quaternion.identity);
 						SelectButton.transform.SetParent (PlayerCamera.transform);
 						SelectButton.GetComponentInChildren<Text> ().text = "Player " + Pla.pseudo;
 						SelectButton.GetComponentInChildren<Button> ().onClick.AddListener (selectionPlayer);*/
                         CmdVote(Pla.id, prevVote);
                         prevVote = Pla.id;
-					}
-				}
+                    }
+                }
             }
         }
     }
