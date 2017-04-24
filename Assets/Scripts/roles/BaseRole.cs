@@ -5,6 +5,8 @@ using UnityEngine.Networking;
 abstract public class BaseRole : NetworkBehaviour {
 
     protected bool ready;
+
+    [SyncVar]
     protected GameObject selectedPlayer;
 
 	[SyncVar]
@@ -17,16 +19,13 @@ abstract public class BaseRole : NetworkBehaviour {
 
         lover = null;
         selectedPlayer = null;
-        //StartCoroutine(GetComponent<Player>().Vote());
 	}
 
     public abstract void PlayTurn();
-    public virtual void Die() {
-        Debug.Log("{MORT} " + GetType() + " (id : " + GetComponent<Player>().ID() + ") est mouru!");
 
+    public virtual void Die() {
 		CmdRemovePlayer (gameObject);
         GetComponent<Player>().death = true;
-        /*Destroy(gameObject);*/
     }
 
 	[Command]
@@ -45,4 +44,23 @@ abstract public class BaseRole : NetworkBehaviour {
         lover = l;
     }
 
+    public GameObject GetSelectedPlayer() {
+        return selectedPlayer;
+    }
+
+    public void SetSelectedPlayer(GameObject g) {
+        if(GetComponent<Cupidon>()) {
+            if (selectedPlayer != null && selectedPlayer != g)
+                GetComponent<Cupidon>().SetSecondLover(g);       
+            else if (selectedPlayer == null)
+                selectedPlayer = g;   
+        }
+        else
+            selectedPlayer = g;
+    }
+
+    [Command]
+    public void CmdMsg(string msg, bool pV) {
+        GameManager.instance.MessageToPlayers(msg, pV);
+    }
 }

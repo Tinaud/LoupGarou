@@ -141,6 +141,7 @@ public class Player : NetworkBehaviour {
 			return;
 
 		CurrentChat.ChatUpdate(Message);
+        CurrentChat.gameObject.transform.GetChild(0).GetChild(0).Find("Scrollbar Vertical").GetComponent<Scrollbar>().value = 0f;
     }
 
     void Update()
@@ -153,6 +154,22 @@ public class Player : NetworkBehaviour {
 
         if (Input.GetKeyDown(KeyCode.T) || (Input.GetKeyDown(KeyCode.Return) && CurrentChat.TextZone.text == ""))
             CurrentChat.GetComponentInChildren<InputField>().ActivateInputField();
+        if (Input.GetKeyDown(KeyCode.DownArrow))
+        {
+            CurrentChat.gameObject.transform.GetChild(0).GetChild(0).Find("Scrollbar Vertical").GetComponent<Scrollbar>().value -= 0.1f;
+        }
+        else if (Input.GetKeyDown(KeyCode.UpArrow))
+        {
+            CurrentChat.gameObject.transform.GetChild(0).GetChild(0).Find("Scrollbar Vertical").GetComponent<Scrollbar>().value += 0.1f;
+        }
+        if (Input.GetKeyDown(KeyCode.LeftArrow))
+        {
+            CurrentChat.gameObject.transform.GetChild(0).GetChild(0).Find("Scrollbar Horizontal").GetComponent<Scrollbar>().value -= 0.1f;
+        }
+        else if (Input.GetKeyDown(KeyCode.RightArrow))
+        {
+            CurrentChat.gameObject.transform.GetChild(0).GetChild(0).Find("Scrollbar Horizontal").GetComponent<Scrollbar>().value += 0.1f;
+        }
 
         //Raycast pour savoir si on a toucher un joueur bon joueur
         if (Input.GetMouseButtonDown(0))//&& yourTurn)
@@ -174,10 +191,16 @@ public class Player : NetworkBehaviour {
 						SelectButton.GetComponentInChildren<Button> ().onClick.AddListener (selectionPlayer);*/
                         CmdVote(Pla.id, prevVote);
                         prevVote = Pla.id;
+                        CmdSetSelected(Pla.gameObject);
                     }
-                }
+				}
             }
         }
+    }
+
+    [Command]
+    public void CmdSetSelected(GameObject g) {
+        GetComponent<BaseRole>().SetSelectedPlayer(g);
     }
 
     [Command]
@@ -185,6 +208,12 @@ public class Player : NetworkBehaviour {
     {
         GameManager.instance.Vote(id, pV);
     }
+
+    [Command]
+    public void CmdMsg(string msg, bool pV) {
+        GameManager.instance.MessageToPlayers(msg, pV);
+    }
+
 
     void selectionPlayer()
     {

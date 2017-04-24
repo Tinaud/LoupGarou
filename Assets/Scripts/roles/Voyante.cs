@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using System.Collections;
 
 public class Voyante : BaseRole {
 
@@ -8,18 +9,17 @@ public class Voyante : BaseRole {
 
     public override void PlayTurn() {
         ready = false;
+        selectedPlayer = null;
 
-        players = GameManager.instance.GetPlayers();
-
-        selectedPlayer = players[Random.Range(0, players.Count)];
-
-        Debug.Log("[VOYANTE] Le joueur " + selectedPlayer.GetComponent<Player>().ID() + " est : " + selectedPlayer.GetComponent<BaseRole>().GetType());
-
-        ready = true;
+        StartCoroutine(WaitForChoice());
     }
-	public override string ToString ()
-	{
+
+    public override string ToString () {
 		return string.Format ("[Voyante]");
 	}
 
+    IEnumerator WaitForChoice() {
+        yield return new WaitWhile(() => selectedPlayer == null);
+        ready = true;
+    }
 }
