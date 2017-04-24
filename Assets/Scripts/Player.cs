@@ -23,6 +23,7 @@ public class Player : NetworkBehaviour {
 
     [SyncVar]
     public int vote;
+
     [SyncVar]
     public int prevVote = -1;
 
