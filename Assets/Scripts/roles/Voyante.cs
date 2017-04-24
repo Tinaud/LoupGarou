@@ -9,6 +9,8 @@ public class Voyante : BaseRole {
     public override void PlayTurn() {
         ready = false;
 
+        players = GameManager.instance.GetPlayers();
+
         selectedPlayer = players[Random.Range(0, players.Count)];
 
         Debug.Log("[VOYANTE] Le joueur " + selectedPlayer.GetComponent<Player>().ID() + " est : " + selectedPlayer.GetComponent<BaseRole>().GetType());

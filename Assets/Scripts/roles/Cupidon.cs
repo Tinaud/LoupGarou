@@ -12,6 +12,8 @@ public class Cupidon : BaseRole {
     public override void PlayTurn() {
         ready = false;
 
+        players = GameManager.instance.GetPlayers();
+
         int rand = Random.Range(0, players.Count);
         int rand2 = rand;
 

@@ -20,6 +20,8 @@ public class GameManager : NetworkBehaviour {
 		}
 	}
 
+    public enum TurnIssue { NO_DEATH, DEATH, WITCH };
+
 	[SyncVar]
     bool gameStarted;
 
@@ -32,17 +34,19 @@ public class GameManager : NetworkBehaviour {
 	[SyncVar]
 	PlayerInfo refSorciere;
 
+    [SerializeField]
+    GameObject fireCamp;
 
+    [SyncVar]
+    public TurnIssue turnIssue = TurnIssue.NO_DEATH;
 
-	public class SyncListPlayer : SyncListStruct<PlayerInfo> {} 
+    public class SyncListPlayer : SyncListStruct<PlayerInfo> {} 
 
-	void PlayerChanged(SyncListPlayer.Operation op, int itemIndex)
-	{
-		Debug.Log("New player connected: " + op);
-	}
+	void PlayersListChanged(SyncListPlayer.Operation op, int itemIndex) { Debug.Log("Players List changed: " + op); }
+    void WolvesListChanged(SyncListPlayer.Operation op, int itemIndex) { Debug.Log("Wolves List changed: " + op); }
+    void VictimsListChanged(SyncListPlayer.Operation op, int itemIndex) { Debug.Log("Victims List changed: " + op); }
 
-
-	[SyncVar]
+    [SyncVar]
 	uint nbrPlayersMax;
 
 	[SyncVar]
@@ -94,9 +98,9 @@ public class GameManager : NetworkBehaviour {
 		nom.Add("Catmeoutsy");
 		nom.Add("Howbowdat");
 
-		playersList.Callback = PlayerChanged;
-		wolvesList.Callback = PlayerChanged;
-		victimsList.Callback = PlayerChanged;
+		playersList.Callback = PlayersListChanged;
+		wolvesList.Callback = WolvesListChanged;
+		victimsList.Callback = VictimsListChanged;
     }
 
     void Update () {
@@ -186,17 +190,18 @@ public class GameManager : NetworkBehaviour {
 
     void RearrangePlayers() {
         float angle = 0.0f;
+        Vector3 fireCampPos = fireCamp.transform.position;
 
-		foreach(PlayerInfo g in playersList) {
-            Vector3 pos = new Vector3(10 * Mathf.Cos(angle), 0, 10 * Mathf.Sin(angle));
-            Vector3 relativePos = Vector3.zero - pos;
-            Quaternion rotation = Quaternion.LookRotation(relativePos);
-            
-            g.playerRef.transform.position = pos;
-			g.playerRef.transform.rotation = rotation;
+        foreach (PlayerInfo g in playersList) {
+    
+            Vector3 pos = new Vector3(fireCampPos.x + 10f * Mathf.Cos(angle), 0, fireCampPos.z + 10f * Mathf.Sin(angle));
+            Quaternion rotation = Quaternion.LookRotation(fireCampPos - pos);
+
+            g.playerRef.RpcUpdatePosition(pos, rotation);
 
             angle += (2 * Mathf.PI) / playersList.Count;
         }
+
     }
 
     void AddRoles() {
@@ -234,6 +239,15 @@ public class GameManager : NetworkBehaviour {
 
 		wolvesList.Remove(pInfo);
     }
+    
+    public void RemoveVictims(GameObject _v)
+    {
+        PlayerInfo pInfo = new PlayerInfo();
+        pInfo.playerRef = _v.GetComponent<Player>();
+        pInfo.netId = _v.GetComponent<NetworkIdentity>().netId;
+
+        victimsList.Remove(pInfo);
+    }
 
     public void AddVictim(GameObject _v) {
 		PlayerInfo pInfo = new PlayerInfo ();
@@ -242,9 +256,9 @@ public class GameManager : NetworkBehaviour {
 
 		victimsList.Add(pInfo);
     }
-		
+
     public void SaveVictim() {
-		victimsList.Clear();
+        victimsList.Clear();
     }
 
     public void Vote(int id, int pId)
@@ -306,6 +320,8 @@ public class GameManager : NetworkBehaviour {
             //SORCIÈRE
 			if(refSorciere.playerRef != null)
             {
+                turnIssue = TurnIssue.WITCH;
+                fireCamp.GetComponent<FireLightScript>().RpcChangeColor();
                 MessageToPlayers("MJ : La sorcière choisi de sauver ou de tuer une personne");
 				BaseRole _refSorciere = refSorciere.playerRef.GetComponent<BaseRole>();
                 refSorciere.playerRef.yourTurn = true;
@@ -315,17 +331,20 @@ public class GameManager : NetworkBehaviour {
             }
 
             //FIN DE LA NUIT
-			/*if(victimsList.Count > 0) {
-				foreach(PlayerInfo v in victimsList)
-                { 
-					BaseRole _refVictim = v.playerRef.GetComponent<BaseRole>();
+			if(victimsList.Count > 0) {
+                turnIssue = TurnIssue.DEATH;
+                fireCamp.GetComponent<FireLightScript>().RpcChangeColor();
+                int i;
+                foreach (PlayerInfo v in victimsList)
+                {
+                    BaseRole _refVictim = v.playerRef.GetComponent<BaseRole>();
 					_refVictim.Die();
 					MessageToPlayers("MJ : " + v.playerRef.pseudo + " est retrouvé mort. C'était : " + _refVictim.GetType());
                 }
-				if (victimsList != null)
-					victimsList.Clear ();
+
+                SaveVictim();
             }
-            else*/
+            else
             foreach (PlayerInfo g in playersList)
             {
                 g.playerRef.yourTurn = true;
@@ -335,8 +354,9 @@ public class GameManager : NetworkBehaviour {
                 MessageToPlayers("MJ :  Il n'y a aucun mort cette nuit! gg wp.");
                 Debug.Log("{MORT} Il n'y a aucun mort cette nuit! gg wp");
             }
-                
+
             Debug.Log(playersList.Count + " " + wolvesList.Count);
+            Debug.Log("Players: " + playersList.Count + ", Wolves: " + wolvesList.Count);
             
             yield return new WaitForSeconds(30f);
 
@@ -360,7 +380,13 @@ public class GameManager : NetworkBehaviour {
             {
                 g.playerRef.yourTurn = false;
                 g.playerRef.prevVote = -1;
-            } 
+            }
+
+            if (turnIssue != TurnIssue.NO_DEATH)
+            {
+                turnIssue = TurnIssue.NO_DEATH;
+                fireCamp.GetComponent<FireLightScript>().RpcChangeColor();
+            }
         }
     }
 		

@@ -11,6 +11,8 @@ public class Loup : BaseRole {
     public override void PlayTurn() {
         Debug.Log("[LOUP] Les loups font leur choix.");
 
+        players = GameManager.instance.GetPlayers();
+
         ready = false;
         int rand;
 
