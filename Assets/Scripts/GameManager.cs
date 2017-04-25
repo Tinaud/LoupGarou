@@ -374,9 +374,12 @@ public class GameManager : NetworkBehaviour {
             //PHASE DU JOUR (VOTE DU VILLAGE)
             if(gameRun) {
                 foreach (PlayerInfo g in playersList)
+                { 
                     g.playerRef().yourTurn = true;
+                    g.playerRef().timer = true;
+                }
 
-                yield return new WaitForSeconds(10f);
+                yield return new WaitForSeconds(30f);
 
                 /*for (int i = 0; i < playersList.Count; i++){
                     Debug.Log(playersList[i].pseudo + " vote: " + playersList[i].playerRef().vote);
