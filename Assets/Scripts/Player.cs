@@ -73,7 +73,7 @@ public class Player : NetworkBehaviour {
 		ChatB.transform.SetParent (PlayerCamera.transform);
 		CurrentChat = ChatB.GetComponent<ChatBox> ();
 		CurrentChat.setPlayer (this);
-		CurrentChat.WelcomeText.text = "Bienvenue à " + NetworkManager.singleton.matchName;
+
 
 		Cursor.lockState = CursorLockMode.Locked;
 	}
@@ -116,6 +116,15 @@ public class Player : NetworkBehaviour {
 			return;
 
 		StartCoroutine(skyManager.SwitchTime ());
+	}
+
+	[ClientRpc]
+	public void RpcUpdateChatBPlace(string place)
+	{
+		if (!isLocalPlayer)
+			return;
+
+		CurrentChat.WelcomeText.text = "Bienvenue à " + place;
 	}
 
     [ClientRpc]

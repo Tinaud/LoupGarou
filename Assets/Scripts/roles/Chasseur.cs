@@ -1,4 +1,6 @@
 ﻿using UnityEngine;
+using System.Collections;
+
 public class Chasseur : BaseRole {
 
     public override void Start() {
@@ -6,20 +8,19 @@ public class Chasseur : BaseRole {
     }
 
     public override void PlayTurn() {
-        
+        ready = false;
+        selectedPlayer = null;
+
+        StartCoroutine(WaitForChoice());
     }
 
-    public override void Die() {
-        if (selectedPlayer != null) {
-            Debug.Log("Chasseur a emmené quelqu'un dans la mort.");
-            selectedPlayer.GetComponent<BaseRole>().Die();
-        }
-
-        base.Die();
-    }
-
-	public override string ToString ()
-	{
+	public override string ToString () {
 		return string.Format ("[Chasseur]");
 	}
+
+    IEnumerator WaitForChoice() {
+        yield return new WaitWhile(() => selectedPlayer == null);
+
+        ready = true;
+    }
 }

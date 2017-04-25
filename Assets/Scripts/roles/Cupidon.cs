@@ -17,6 +17,14 @@ public class Cupidon : BaseRole {
         StartCoroutine(WaitForChoice());
     }
 
+    public override string ToString () {
+		return string.Format ("[Cupidon]");
+	}
+
+    public void SetSecondLover(GameObject o) {
+        secondSelected = o;
+    }
+
     IEnumerator WaitForChoice() {
         yield return new WaitWhile(() => selectedPlayer == null || secondSelected == null);
 
@@ -24,13 +32,5 @@ public class Cupidon : BaseRole {
         secondSelected.GetComponent<BaseRole>().SetLover(selectedPlayer);
 
         ready = true;
-    }
-
-    public override string ToString () {
-		return string.Format ("[Cupidon]");
-	}
-
-    public void SetSecondLover(GameObject o) {
-        secondSelected = o;
     }
 }
