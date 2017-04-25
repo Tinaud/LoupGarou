@@ -381,7 +381,7 @@ public class GameManager : NetworkBehaviour {
 
                 BaseRole _refSorciere = refSorciere.playerRef().GetComponent<BaseRole>();
                 MessageToPlayers("MJ : La sorcière choisi de sauver la victime ou d'éliminer quelqu'un.", true);
-
+                refSorciere.playerRef().RpcAddMsg("MJ: La victime est : " + victimsList[0].playerRef().pseudo);
                 refSorciere.playerRef().yourTurn = true;
 				refSorciere.playerRef ().RpcChangeCursorColor (Color.white);
                 _refSorciere.PlayTurn();

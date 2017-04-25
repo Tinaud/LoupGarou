@@ -31,8 +31,8 @@ abstract public class BaseRole : NetworkBehaviour {
     [Command]
     public void CmdSendMsgLover(GameObject l1, GameObject l2)
     {
-        l2.GetComponent<Player>().RpcAddMsg("Vous avez un amoureux " + l1.GetComponent<Player>().pseudo);
-        l1.GetComponent<Player>().RpcAddMsg("Vous avez un amoureux " + l2.GetComponent<Player>().pseudo);
+        l2.GetComponent<Player>().RpcAddMsg("MJ : Vous avez un amoureux " + l1.GetComponent<Player>().pseudo);
+        l1.GetComponent<Player>().RpcAddMsg("MJ : Vous avez un amoureux " + l2.GetComponent<Player>().pseudo);
 
     }
 
