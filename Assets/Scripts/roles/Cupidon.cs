@@ -32,6 +32,8 @@ public class Cupidon : BaseRole {
         selectedPlayer.GetComponent<BaseRole>().SetLover(secondSelected);
         secondSelected.GetComponent<BaseRole>().SetLover(selectedPlayer);
 
+        GetComponent<BaseRole>().CmdSendMsgLover(selectedPlayer, secondSelected);
+
         ready = true;
     }
 }

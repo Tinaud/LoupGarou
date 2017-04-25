@@ -40,7 +40,7 @@ public class ChatBox : NetworkBehaviour
     // Update is called once per frame
     void Update()
     {
-		if (Input.GetKeyDown(KeyCode.Return) && TextZone.text != "" && P1.yourTurn)
+		if (Input.GetKeyDown(KeyCode.Return) && TextZone.text != "" && (P1.yourTurn || P1.death))
         {
             if (P1 != null)
                 TextZone.text = P1.pseudo + " : " + TextZone.text;

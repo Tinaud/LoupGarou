@@ -273,7 +273,7 @@ public class GameManager : NetworkBehaviour {
        if (pId != -1)
         {
             for (int i = 0; i < playersList.Count; i++)
-				if (playersList[i].playerRef().id == pId)
+				if (playersList[i].playerRef().id == pId && playersList[i].playerRef().vote < 0)
                 {
 					playersList[i].playerRef().vote--;
                 }
@@ -409,8 +409,7 @@ public class GameManager : NetworkBehaviour {
 					StartCoroutine (Kill (p));
 					yield return new WaitForSeconds(.5f);
 					yield return new WaitUntil (() => (killedDead <= 0));
-				}
-                    
+				}                    
 				victimsList.Clear ();
 			} 
 			else {
@@ -452,6 +451,8 @@ public class GameManager : NetworkBehaviour {
             }
 
             GameEndCheck(ref gameRun);
+
+            ResetVote();
         }
     }
 
@@ -561,6 +562,7 @@ public class GameManager : NetworkBehaviour {
         Player mostVotedPlayer = null;
 
         foreach(PlayerInfo p in playersList) {
+            Debug.Log(p.playerRef().pseudo + " " + p.playerRef().vote);
             if(p.playerRef().vote > mostVote) {
                 mostVote = p.playerRef().vote;
                 mostVotedPlayer = p.playerRef();

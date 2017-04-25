@@ -28,6 +28,14 @@ abstract public class BaseRole : NetworkBehaviour {
         GetComponent<Player>().death = true;
     }
 
+    [Command]
+    public void CmdSendMsgLover(GameObject l1, GameObject l2)
+    {
+        l2.GetComponent<Player>().RpcAddMsg("Vous avez un amoureux " + l1.GetComponent<Player>().pseudo);
+        l1.GetComponent<Player>().RpcAddMsg("Vous avez un amoureux " + l2.GetComponent<Player>().pseudo);
+
+    }
+
 	[Command]
 	void CmdRemovePlayer(GameObject _p) {
 		if (GetComponent<Loup>())
@@ -51,9 +59,15 @@ abstract public class BaseRole : NetworkBehaviour {
     public void SetSelectedPlayer(GameObject g) {
         if(GetComponent<Cupidon>()) {
             if (selectedPlayer != null && selectedPlayer != g)
-                GetComponent<Cupidon>().SetSecondLover(g);       
+            { 
+                Debug.Log(g.GetComponent<Player>().pseudo + " est amoureux ");
+                GetComponent<Cupidon>().SetSecondLover(g);
+            }       
             else if (selectedPlayer == null)
-                selectedPlayer = g;   
+            {
+                 Debug.Log(g.GetComponent<Player>().pseudo + " est amoureux ");
+                            selectedPlayer = g;
+            }                  
         }
         else
             selectedPlayer = g;
