@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using UnityEngine.Networking;
 using System.Collections;
 
 public class Loup : BaseRole {
@@ -11,22 +10,17 @@ public class Loup : BaseRole {
     public override void PlayTurn() {
         ready = false;
         selectedPlayer = null;
-        //StartCoroutine(WaitForChoice());
-        ready = true;
+
+        StartCoroutine(WaitForChoice());
     }
 
 	public override string ToString () {
 		return string.Format ("[Loup]");
 	}
 
-    /*IEnumerator WaitForChoice() {
-        while (selectedPlayer == null) {
-            selectedPlayer = GameManager.instance.GetMostVote();
-            yield return new WaitForSeconds(0.5f);
-        }
-
-
+    IEnumerator WaitForChoice() {
+        yield return new WaitWhile(() => selectedPlayer == null);
 
         ready = true;
-    }*/
+    }
 }

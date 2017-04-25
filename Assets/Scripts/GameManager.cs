@@ -44,6 +44,9 @@ public class GameManager : NetworkBehaviour {
 	[SyncVar]
     bool gameStarted;
 
+    [SyncVar]
+    bool killedDead;
+
 	[SyncVar]
 	PlayerInfo refVoyante;
 	[SyncVar]
@@ -89,6 +92,7 @@ public class GameManager : NetworkBehaviour {
 	public override void OnStartServer () {
 		
 		gameStarted = false;
+        killedDead = true;
 		nbrPlayers = 0;
 		nbrPlayersMax = NetworkManager.singleton.matchSize;
 
@@ -165,11 +169,8 @@ public class GameManager : NetworkBehaviour {
     }
 
 	public void AddPlayer(GameObject _p) {
-
-
 		PlayerInfo pInfo = new PlayerInfo (_p.GetComponent<NetworkIdentity> ().netId, _p.GetComponent<Player> ().pseudo);
 		pInfo.playerRef().vote = 0;
-
 
         playersList.Add(pInfo);
 		nbrPlayers = playersList.Count;
@@ -248,6 +249,10 @@ public class GameManager : NetworkBehaviour {
         victimsList.Clear();
     }
 
+    public GameObject GetVictim() {
+        return victimsList[0].playerRef().gameObject;
+    }
+
     public void Vote(int id, int pId)
     {
        if (pId != -1)
@@ -292,7 +297,6 @@ public class GameManager : NetworkBehaviour {
                 refVoyante.playerRef().yourTurn = true;
                 _refVoyante.PlayTurn();
                 yield return new WaitUntil(() => _refVoyante.IsReady());
-                MessageToPlayers("VOYANTE : La voyante a sondé : " + _refVoyante.GetSelectedPlayer().GetComponent<BaseRole>().ToString(), true);
                 refVoyante.playerRef().yourTurn = false;
                 ResetVote();
             }
@@ -316,7 +320,7 @@ public class GameManager : NetworkBehaviour {
                     p.playerRef().yourTurn = false;
                 }
 
-                //AddVictim(GetMostVote());
+                AddVictim(GetMostVote());
                 ResetVote();
             }
 
@@ -326,12 +330,14 @@ public class GameManager : NetworkBehaviour {
                 turnIssue = TurnIssue.WITCH;
 				FireForPlayers ();
 
-                MessageToPlayers("MJ : La sorcière choisi de sauver ou de tuer une personne", true);
-				BaseRole _refSorciere = refSorciere.playerRef().GetComponent<BaseRole>();
-				_refSorciere.PlayTurn();
+                BaseRole _refSorciere = refSorciere.playerRef().GetComponent<BaseRole>();
+                MessageToPlayers("MJ : La sorcière choisi de sauver la victime ou d'éliminer quelqu'un.", true);
 
-				yield return new WaitUntil(() => _refSorciere.IsReady());
-				refSorciere.playerRef().yourTurn = false;
+                refSorciere.playerRef().yourTurn = true;
+                _refSorciere.PlayTurn();
+                yield return new WaitUntil(() => _refSorciere.IsReady());
+                refSorciere.playerRef().yourTurn = false;
+                ResetVote();
             }
 
 			yield return new WaitForSeconds(4f);
@@ -343,9 +349,12 @@ public class GameManager : NetworkBehaviour {
                 turnIssue = TurnIssue.VICTIMS;
 				FireForPlayers ();
 
-				foreach (PlayerInfo p in victimsList)
-                    Kill(p);
-
+				foreach (PlayerInfo p in victimsList) {
+                    killedDead = false;
+                    StartCoroutine(Kill(p));
+                    yield return new WaitUntil(() => killedDead);
+                }
+                    
 				victimsList.Clear ();
             }
             else
@@ -365,7 +374,10 @@ public class GameManager : NetworkBehaviour {
                 }*/
 
                 GameObject mostVotedPlayer = GetMostVote();
-                Kill(new PlayerInfo(mostVotedPlayer.GetComponent<NetworkIdentity>().netId, mostVotedPlayer.GetComponent<Player>().pseudo));
+
+                killedDead = false;
+                StartCoroutine(Kill(new PlayerInfo(mostVotedPlayer.GetComponent<NetworkIdentity>().netId, mostVotedPlayer.GetComponent<Player>().pseudo)));
+                yield return new WaitUntil(() => killedDead);
             }
 
             GameEndCheck(ref gameRun);
@@ -382,14 +394,26 @@ public class GameManager : NetworkBehaviour {
         }
     }
 
-    void Kill(PlayerInfo p) {
+    IEnumerator Kill(PlayerInfo p) {
         BaseRole _refVictim = p.playerRef().GetComponent<BaseRole>();
 
         if (p.Equals(refSorciere))
             refSorciere.setPlayerRef(null);
 
-        if (p.Equals(refChasseur))
+        //CHASSEUR
+        if (p.Equals(refChasseur)) {
+            BaseRole _refChasseur = refChasseur.playerRef().GetComponent<BaseRole>();
+            MessageToPlayers("MJ : Dans un dernier souffle, le chasseur assassina quelqu'un!", true);
+
+            refChasseur.playerRef().yourTurn = true;
+            _refChasseur.PlayTurn();
+            yield return new WaitUntil(() => _refChasseur.IsReady());
+            refChasseur.playerRef().yourTurn = false;
+            GameObject killedPlayer = _refChasseur.GetSelectedPlayer();
+            StartCoroutine(Kill(new PlayerInfo(killedPlayer.GetComponent<NetworkIdentity>().netId, killedPlayer.GetComponent<Player>().pseudo)));
+            ResetVote();
             refChasseur.setPlayerRef(null);
+        }
 
         if (p.Equals(refCupidon))
             refCupidon.setPlayerRef(null);
@@ -410,17 +434,15 @@ public class GameManager : NetworkBehaviour {
             Player _refLoverP = _refLover.GetComponent<Player>();
 
             MessageToPlayers("MJ : Son amour apporta quelqu'un dans la mort.", true);
-            MessageToPlayers("MJ : " + _refLoverP.pseudo + " est retrouvé mort. Il était " + _refLover.GetType(), true);
 
             _refVictim.SetLover(null);
             _refLover.SetLover(null);
 
-            _refLover.Die();
-            _refLoverP.RpcUpdateChatBRole(_refLoverP.pseudo + " [Ghost - " + _refLover.GetType() + "]");
-            _refLoverP.RpcChangeFireColor(TurnIssue.DEAD);
-
-            ghostsList.Add(new PlayerInfo(_refLoverP.GetComponent<NetworkIdentity>().netId, _refLoverP.pseudo));
+            StartCoroutine(Kill(new PlayerInfo(_refLoverP.GetComponent<NetworkIdentity>().netId, _refLoverP.pseudo)));
         }
+
+        yield return new WaitForSeconds(0.5f);
+        killedDead = true;
     }
 
     void GameEndCheck(ref bool gameRun) {
