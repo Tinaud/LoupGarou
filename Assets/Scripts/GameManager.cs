@@ -37,6 +37,12 @@ public class GameManager : NetworkBehaviour {
 		{
 			return (netId == p.netId) && (pseudo == p.pseudo);
 		}
+
+		public bool IsNull ()
+		{
+			PlayerInfo p = new PlayerInfo ();
+			return (netId == p.netId) && (pseudo == p.pseudo);
+		}
 	}
 
     public enum TurnIssue { NO_VICTIMS, VICTIMS, WITCH, DEAD, NO_TURN, TURN, VOTE };
@@ -179,6 +185,8 @@ public class GameManager : NetworkBehaviour {
 		if (nbrPlayers > 1)
 			MessageToPlayers (pInfo.ToString() + "is connected.", true);
 
+		UpdateGametag ();
+
 		if (nbrPlayers == nbrPlayersMax && !gameStarted)
 			StartGame ();
 	}
@@ -269,7 +277,7 @@ public class GameManager : NetworkBehaviour {
         yield return new WaitForSeconds(2f);
 
         //CUPIDON
-		if(refCupidon.playerRef() != null) {
+		if(!refCupidon.IsNull()) {
             BaseRole _refCupidon = refCupidon.playerRef().GetComponent<BaseRole>();
             MessageToPlayers("MJ : Cupidon choisi deux personnes qui tomberont amoureuses", true);
 			
@@ -285,7 +293,7 @@ public class GameManager : NetworkBehaviour {
         while(gameRun) {
 
             //VOYANTE
-			if(refVoyante.playerRef() != null) {
+			if(!refVoyante.IsNull()) {
                 BaseRole _refVoyante = refVoyante.playerRef().GetComponent<BaseRole>();
                 MessageToPlayers("MJ : La voyante choisi une personne pour connaitre son rôle", true);
 
@@ -321,7 +329,7 @@ public class GameManager : NetworkBehaviour {
             }
 
             //SORCIÈRE
-			if(refSorciere.playerRef() != null)
+			if(!refSorciere.IsNull())
             {
                 turnIssue = TurnIssue.WITCH;
 				FireForPlayers ();
@@ -386,16 +394,16 @@ public class GameManager : NetworkBehaviour {
         BaseRole _refVictim = p.playerRef().GetComponent<BaseRole>();
 
         if (p.Equals(refSorciere))
-            refSorciere.setPlayerRef(null);
+			refSorciere = new PlayerInfo();
 
         if (p.Equals(refChasseur))
-            refChasseur.setPlayerRef(null);
+			refChasseur = new PlayerInfo();
 
         if (p.Equals(refCupidon))
-            refCupidon.setPlayerRef(null);
+			refCupidon = new PlayerInfo();
 
         if (p.Equals(refVoyante))
-            refVoyante.setPlayerRef(null);
+			refVoyante = new PlayerInfo();
 
         _refVictim.Die();
         p.playerRef().RpcUpdateChatBRole(p.pseudo + " [Ghost - " + _refVictim.GetType() + "]");
@@ -483,4 +491,10 @@ public class GameManager : NetworkBehaviour {
         foreach (PlayerInfo p in playersList)
             p.playerRef().vote = 0;
     }
+
+	void UpdateGametag() {
+		foreach (PlayerInfo p in playersList)
+			p.playerRef().RpcUpdateGametag();
+	}
+
 }

@@ -17,6 +17,9 @@ public class Player : NetworkBehaviour {
 	[SerializeField]
 	Camera PlayerCamera = null;
 
+	[SerializeField]
+	TextMesh gameTag = null;
+
     static int nextId = 0;
 
 	[SyncVar]
@@ -63,6 +66,7 @@ public class Player : NetworkBehaviour {
         yourTurn = true;
 
 		CmdSetup ();
+
 		skyManager = GameObject.Find ("SkyManager").GetComponent<SkyManager> ();
 
         GameObject ChatB = Instantiate (ChatBoxPrefab, new Vector3 (0, 0, 0), Quaternion.identity);
@@ -85,7 +89,15 @@ public class Player : NetworkBehaviour {
 		pseudo = gameManager.nom [x];
 		gameManager.nom.RemoveAt (x);
 
+		//RpcUpdateGametag ();
+
 		gameManager.AddPlayer (gameObject);
+	}
+
+	[ClientRpc]
+	public void RpcUpdateGametag()
+	{
+		gameTag.text = pseudo;
 	}
 
 	[ClientRpc]
