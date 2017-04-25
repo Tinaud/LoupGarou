@@ -89,15 +89,7 @@ public class Player : NetworkBehaviour {
 		pseudo = gameManager.nom [x];
 		gameManager.nom.RemoveAt (x);
 
-		//RpcUpdateGametag ();
-
 		gameManager.AddPlayer (gameObject);
-	}
-
-	[ClientRpc]
-	public void RpcUpdateGametag()
-	{
-		gameTag.text = pseudo;
 	}
 
 	[ClientRpc]
@@ -133,7 +125,6 @@ public class Player : NetworkBehaviour {
         if (!isLocalPlayer)
             return;
 		
-        Debug.Log("Nouveau : " + role);
 		CurrentChat.RoleText.GetComponent<Text>().text = role;
     }
 
@@ -143,10 +134,13 @@ public class Player : NetworkBehaviour {
         if (!isLocalPlayer)
             return;
 		
-        Capsule.GetComponent<MeshRenderer> ().material.color = c;
-		Capsule.transform.Find("Arm").GetComponent<MeshRenderer>().material.color = c;
+		ChangeColor (c);
 	}
 
+	void ChangeColor(Color c) {
+		Capsule.GetComponent<MeshRenderer> ().material.color = c;
+		Capsule.transform.Find("Arm").GetComponent<MeshRenderer>().material.color = c;
+	}
 
     [ClientRpc]
     public void RpcUpdatePosition(Vector3 pos, Quaternion rot)
@@ -158,6 +152,14 @@ public class Player : NetworkBehaviour {
         transform.rotation = rot;
     }
 
+	[ClientRpc]
+	public void RpcDie(NetworkInstanceId _netId)
+	{
+		if (_netId == GetComponent<NetworkIdentity> ().netId) {
+			ChangeColor (Color.black);
+			gameTag.gameObject.SetActive (false);
+		}
+	}
 
     [Command]
     public void CmdSendMsg(string Message)
@@ -177,6 +179,8 @@ public class Player : NetworkBehaviour {
 
     void Update()
     {
+		if (gameTag.gameObject.activeInHierarchy)
+			gameTag.text = pseudo;
 
         if (!isLocalPlayer || death)
             return;

@@ -8,7 +8,7 @@ public class FireLightScript : MonoBehaviour
 	public Light fireLight;
 	public ParticleSystem flameParticles;
 
-	Color flameColor, witchFlame, victimFlame, noFlame;
+	Color flameColor, cupidonFlame, witchFlame, victimFlame, noFlame;
 
 	public bool run = false;
 
@@ -17,6 +17,7 @@ public class FireLightScript : MonoBehaviour
 	void Start() {
 		
 		flameColor = new Color(62f / 255f, 62f / 255f, 62f / 255f, 1);
+		cupidonFlame = new Color (1f, 100f / 255f, 1f, 1f);
 		witchFlame = new Color(62f / 255f, 255f / 255f, 62f / 255f, 1);
 		victimFlame = new Color(124f / 255f, 62f / 255f, 62f / 255f, 1);
 		noFlame = new Color (0f, 0f, 0f, 0f);
@@ -60,6 +61,20 @@ public class FireLightScript : MonoBehaviour
 				settings.startColor = new ParticleSystem.MinMaxGradient (victimFlame);
                 break;
 
+			case GameManager.TurnIssue.CUPIDON:
+				fireLight.color = new Color(1, 125f / 255f, 1, 1);
+				fireLight.range = 30f;
+				settings = flameParticles.main;
+				settings.startColor = new ParticleSystem.MinMaxGradient (cupidonFlame);
+				break;
+
+			case GameManager.TurnIssue.SEER:
+				fireLight.color = new Color(225f / 255f, 125f / 255f, 1, 1);
+				fireLight.range = 30f;
+				settings = flameParticles.main;
+				settings.startColor = new ParticleSystem.MinMaxGradient (cupidonFlame);
+				break;
+
             case GameManager.TurnIssue.WITCH:
 				fireLight.color = new Color(125f / 255f, 125f / 255f, 60f / 255f, 1);
 				fireLight.range = 30f;
@@ -82,4 +97,13 @@ public class FireLightScript : MonoBehaviour
 				break;
         }
     }
+
+	public void MenuFire() {
+		ParticleSystem.MainModule settings;
+
+		fireLight.color = new Color (1, 135f / 255f, 43f / 255f, 1);
+		fireLight.range = 100f;
+		settings = flameParticles.main;
+		settings.startColor = new ParticleSystem.MinMaxGradient (flameColor);
+	}
 }

@@ -10,6 +10,8 @@ public class SkyManager : MonoBehaviour {
 	[SerializeField]
 	FireLightScript fireCamp = null;
 
+	public bool bMenu = false;
+
 	public FireLightScript FireCamp {
 		get { return fireCamp; }
 	}
@@ -29,10 +31,13 @@ public class SkyManager : MonoBehaviour {
 
 				if (!isDay) {
 					fireCamp.run = false;
-					fireCamp.ChangeColor (GameManager.TurnIssue.DEAD);
+					if (!bMenu)
+						fireCamp.ChangeColor (GameManager.TurnIssue.NO_TURN);
+					else
+						fireCamp.MenuFire ();
 				} else {
 					fireCamp.run = true;
-					fireCamp.ChangeColor (GameManager.TurnIssue.NO_TURN);
+					fireCamp.ChangeColor (GameManager.TurnIssue.VOTE);
 				}
 			}
 
@@ -56,7 +61,7 @@ public class SkyManager : MonoBehaviour {
 			return dayNight [0].fire && dayNight [1].fire;
 	}
 
-	bool IsReady()
+	public bool IsReady()
 	{
 		return (!dayNight [0].switchCycle) && (!dayNight [1].switchCycle);
 	}

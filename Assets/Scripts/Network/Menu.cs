@@ -6,6 +6,9 @@ using UnityEngine.Networking;
 
 public class Menu : MonoBehaviour {
 
+	[SerializeField]
+	SkyManager skyManager = null;
+
 	public GameObject mainMenu, createRoomMenu, joinRoomMenu;
 	bool isLAN = false;
 
@@ -19,6 +22,7 @@ public class Menu : MonoBehaviour {
 	}
 
 	void Start () {
+		StartCoroutine (skyManager.SwitchTime ());
 		mainMenu.SetActive(true);
 		createRoomMenu.SetActive(false);
 		joinRoomMenu.SetActive(false);
