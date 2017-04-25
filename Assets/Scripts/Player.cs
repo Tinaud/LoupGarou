@@ -225,7 +225,7 @@ public class Player : NetworkBehaviour {
         }
 
         //Raycast pour savoir si on a toucher un joueur bon joueur
-		if (Input.GetKeyDown(KeyCode.Space))//&& yourTurn)
+		if (Input.GetMouseButtonDown(1))//&& yourTurn)
         {
             RaycastHit hit;
             //Ray ray = PlayerCamera.ScreenPointToRay(Input.mousePosition);
