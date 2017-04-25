@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.Networking.NetworkSystem;
@@ -39,7 +40,7 @@ public class Player : NetworkBehaviour {
 
     Player Pla;
 
-	FireLightScript fireCamp;
+	SkyManager skyManager;
 
     [SyncVar]
     public bool yourTurn = true;
@@ -62,7 +63,7 @@ public class Player : NetworkBehaviour {
         yourTurn = true;
 
 		CmdSetup ();
-		fireCamp = GameObject.Find ("Campfire").GetComponent<FireLightScript> ();
+		skyManager = GameObject.Find ("SkyManager").GetComponent<SkyManager> ();
 
         GameObject ChatB = Instantiate (ChatBoxPrefab, new Vector3 (0, 0, 0), Quaternion.identity);
 		ChatB.transform.SetParent (PlayerCamera.transform);
@@ -93,7 +94,16 @@ public class Player : NetworkBehaviour {
 		if (!isLocalPlayer)
 			return;
 		
-		fireCamp.ChangeColor (issue);
+		skyManager.FireCamp.ChangeColor (issue);
+	}
+
+	[ClientRpc]
+	public void RpcSwitchTime() 
+	{
+		if (!isLocalPlayer)
+			return;
+
+		StartCoroutine(skyManager.SwitchTime ());
 	}
 
     [ClientRpc]
