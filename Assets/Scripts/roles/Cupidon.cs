@@ -11,6 +11,7 @@ public class Cupidon : BaseRole {
     }
 
     public override void PlayTurn() {
+		GetComponent<Player> ().cursor.color = Color.white;
         ready = false;
 
         players = GameManager.instance.GetPlayers();

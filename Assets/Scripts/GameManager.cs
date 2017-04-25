@@ -51,7 +51,7 @@ public class GameManager : NetworkBehaviour {
     bool gameStarted;
 
     [SyncVar]
-    bool killedDead;
+    int killedDead = 0;
 
 	bool bFirstTurn = true;
 
@@ -105,7 +105,7 @@ public class GameManager : NetworkBehaviour {
 	public override void OnStartServer () {
 		
 		gameStarted = false;
-        killedDead = true;
+        killedDead = 0;
 		nbrPlayers = 0;
 		nbrPlayersMax = NetworkManager.singleton.matchSize;
 		village = NetworkManager.singleton.matchName;
@@ -286,8 +286,14 @@ public class GameManager : NetworkBehaviour {
 
     IEnumerator GameTurn() {
 		SwitchTime ();
-        //First Turn only
-		yield return new WaitUntil(skyManager.IsReady);
+		//First Turn only
+		yield return new WaitForSeconds(.5f);
+		yield return new WaitUntil(() => skyManager.IsReady());
+			
+		foreach (PlayerInfo g in playersList) {
+			g.playerRef().yourTurn = false;
+			g.playerRef().prevVote = -1;
+		}
 
         //CUPIDON
 		if(!refCupidon.IsNull()) {
@@ -297,10 +303,13 @@ public class GameManager : NetworkBehaviour {
 			FireForPlayers();
             MessageToPlayers("MJ : Cupidon choisi deux personnes qui tomberont amoureuses", true);
 			
-            refCupidon.playerRef().yourTurn = true;
+			refCupidon.playerRef().yourTurn = true;
+			refCupidon.playerRef ().RpcChangeCursorColor (Color.white);
             _refCupidon.PlayTurn();
+			yield return new WaitForSeconds(.5f);
 			yield return new WaitUntil(() => _refCupidon.IsReady());
             refCupidon.playerRef().yourTurn = false;
+			refCupidon.playerRef ().RpcChangeCursorColor (Color.black);
             ResetVote();
         }
 
@@ -310,7 +319,9 @@ public class GameManager : NetworkBehaviour {
 			if (!bFirstTurn) {
 				SwitchTime ();
 
-				yield return new WaitUntil(skyManager.IsReady);
+				yield return new WaitForSeconds(.5f);
+				yield return new WaitUntil(() => skyManager.IsReady());
+
 				turnIssue = TurnIssue.NO_TURN;
 				FireForPlayers();
 				bFirstTurn = false;
@@ -325,9 +336,12 @@ public class GameManager : NetworkBehaviour {
                 MessageToPlayers("MJ : La voyante choisi une personne pour connaitre son rôle", true);
 
                 refVoyante.playerRef().yourTurn = true;
+				refVoyante.playerRef ().RpcChangeCursorColor (Color.white);
                 _refVoyante.PlayTurn();
+				yield return new WaitForSeconds(.5f);
                 yield return new WaitUntil(() => _refVoyante.IsReady());
                 refVoyante.playerRef().yourTurn = false;
+				refVoyante.playerRef ().RpcChangeCursorColor (Color.black);
                 ResetVote();
             }
 
@@ -340,16 +354,19 @@ public class GameManager : NetworkBehaviour {
                 foreach(PlayerInfo p in wolvesList) {
                     BaseRole _refWolf = p.playerRef().GetComponent<BaseRole>();
                     p.playerRef().yourTurn = true;
+					p.playerRef ().RpcChangeCursorColor (Color.white);
                     _refWolf.PlayTurn();
                 }
 
                 foreach (PlayerInfo p in wolvesList) {
                     BaseRole _refWolf = p.playerRef().GetComponent<BaseRole>();
+					yield return new WaitForSeconds(.5f);
                     yield return new WaitUntil(() => _refWolf.IsReady());
                 }
 
                 foreach(PlayerInfo p in wolvesList) {
                     p.playerRef().yourTurn = false;
+					p.playerRef ().RpcChangeCursorColor (Color.black);
                 }
 
                 AddVictim(GetMostVote());
@@ -366,16 +383,21 @@ public class GameManager : NetworkBehaviour {
                 MessageToPlayers("MJ : La sorcière choisi de sauver la victime ou d'éliminer quelqu'un.", true);
 
                 refSorciere.playerRef().yourTurn = true;
+				refSorciere.playerRef ().RpcChangeCursorColor (Color.white);
                 _refSorciere.PlayTurn();
+				yield return new WaitForSeconds(.5f);
                 yield return new WaitUntil(() => _refSorciere.IsReady());
                 refSorciere.playerRef().yourTurn = false;
+				refSorciere.playerRef ().RpcChangeCursorColor (Color.black);
                 ResetVote();
             }
 				
             //FIN DE LA NUIT
 			SwitchTime ();
+			yield return new WaitForSeconds(.5f);
 			MessageToPlayers ("MJ :  Un nouveau jour se lève sur la village de " + village + ".", true);
-			yield return new WaitUntil(skyManager.IsReady);
+			yield return new WaitForSeconds(.5f);
+			yield return new WaitUntil(() => skyManager.IsReady());
 
             //TUERIE DES VICTIMES
 			if (victimsList.Count > 0) {
@@ -383,14 +405,16 @@ public class GameManager : NetworkBehaviour {
 				FireForPlayers ();
 
 				foreach (PlayerInfo p in victimsList) {
-					killedDead = false;
+					killedDead++;
 					StartCoroutine (Kill (p));
-					yield return new WaitUntil (() => killedDead);
+					yield return new WaitForSeconds(.5f);
+					yield return new WaitUntil (() => (killedDead <= 0));
 				}
                     
 				victimsList.Clear ();
 			} 
 			else {
+				killedDead = 0;
 				turnIssue = TurnIssue.VOTE;
 				FireForPlayers ();
 				MessageToPlayers ("MJ :  Il n'y a aucun mort cette nuit! gg wp.", true);
@@ -403,10 +427,17 @@ public class GameManager : NetworkBehaviour {
                 foreach (PlayerInfo g in playersList)
                 { 
                     g.playerRef().yourTurn = true;
+					g.playerRef ().RpcChangeCursorColor (Color.white);
                     g.playerRef().timer = true;
                 }
 
                 yield return new WaitForSeconds(30f);
+
+				foreach (PlayerInfo g in playersList) {
+					g.playerRef().yourTurn = false;
+					g.playerRef ().RpcChangeCursorColor (Color.black);
+					g.playerRef().prevVote = -1;
+				}
 
                 /*for (int i = 0; i < playersList.Count; i++){
                     Debug.Log(playersList[i].pseudo + " vote: " + playersList[i].playerRef().vote);
@@ -414,17 +445,13 @@ public class GameManager : NetworkBehaviour {
 
                 GameObject mostVotedPlayer = GetMostVote();
 
-                killedDead = false;
+                killedDead++;
                 StartCoroutine(Kill(new PlayerInfo(mostVotedPlayer.GetComponent<NetworkIdentity>().netId, mostVotedPlayer.GetComponent<Player>().pseudo)));
-                yield return new WaitUntil(() => killedDead);
+				yield return new WaitForSeconds(.5f);
+				yield return new WaitUntil(() => (killedDead <= 0));
             }
 
             GameEndCheck(ref gameRun);
-
-            foreach (PlayerInfo g in playersList) {
-				g.playerRef().yourTurn = false;
-				g.playerRef().prevVote = -1;
-            }
         }
     }
 
@@ -440,10 +467,14 @@ public class GameManager : NetworkBehaviour {
             MessageToPlayers("MJ : Dans un dernier souffle, le chasseur assassina quelqu'un!", true);
 
             refChasseur.playerRef().yourTurn = true;
+			refChasseur.playerRef ().RpcChangeCursorColor (Color.white);
             _refChasseur.PlayTurn();
+			yield return new WaitForSeconds(.5f);
             yield return new WaitUntil(() => _refChasseur.IsReady());
             refChasseur.playerRef().yourTurn = false;
+			refChasseur.playerRef ().RpcChangeCursorColor (Color.black);
             GameObject killedPlayer = _refChasseur.GetSelectedPlayer();
+			killedDead++;
             StartCoroutine(Kill(new PlayerInfo(killedPlayer.GetComponent<NetworkIdentity>().netId, killedPlayer.GetComponent<Player>().pseudo)));
             ResetVote();
 			refChasseur = new PlayerInfo();
@@ -465,6 +496,7 @@ public class GameManager : NetworkBehaviour {
         MessageToPlayers("MJ : " + p.playerRef().pseudo + " est retrouvé mort. Il était " + _refVictim.GetType(), true);
 
         if (_refVictim.lover != null) {
+			killedDead++;
             BaseRole _refLover = _refVictim.lover.GetComponent<BaseRole>();
             Player _refLoverP = _refLover.GetComponent<Player>();
 
@@ -477,7 +509,7 @@ public class GameManager : NetworkBehaviour {
         }
 
         yield return new WaitForSeconds(0.5f);
-        killedDead = true;
+        killedDead--;
     }
 
     void GameEndCheck(ref bool gameRun) {
@@ -518,16 +550,8 @@ public class GameManager : NetworkBehaviour {
 		}
 
 		if (wolves) {
-			foreach (PlayerInfo p in playersList) {
-				p.playerRef ().RpcChangeFireColor (TurnIssue.VICTIMS);
-			}
-
 			foreach (PlayerInfo p in wolvesList) {
 				p.playerRef ().RpcChangeFireColor (TurnIssue.TURN);
-			}
-		} else {
-			foreach (PlayerInfo p in playersList) {
-				p.playerRef ().RpcChangeFireColor (turnIssue);
 			}
 		}
 	}

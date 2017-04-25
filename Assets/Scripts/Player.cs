@@ -18,6 +18,9 @@ public class Player : NetworkBehaviour {
 	Camera PlayerCamera = null;
 
 	[SerializeField]
+	public Image cursor = null;
+
+	[SerializeField]
 	TextMesh gameTag = null;
 
     static int nextId = 0;
@@ -46,7 +49,7 @@ public class Player : NetworkBehaviour {
 	SkyManager skyManager;
 
     [SyncVar]
-    public bool yourTurn = true;
+    public bool yourTurn = false;
     [SyncVar]
     public bool death = false;
     [SyncVar]
@@ -64,8 +67,9 @@ public class Player : NetworkBehaviour {
     public override void OnStartLocalPlayer() {
         PlayerCamera.enabled = true;
         PlayerCamera.tag = "MainCamera";
+		cursor.color = Color.black;
 
-        yourTurn = true;
+        yourTurn = false;
 
 		CmdSetup ();
 
@@ -139,6 +143,15 @@ public class Player : NetworkBehaviour {
 		ChangeColor (c);
 	}
 
+	[ClientRpc]
+	public void RpcChangeCursorColor(Color c)
+	{
+		if (!isLocalPlayer)
+			return;
+
+		cursor.color = c;
+	}
+
 	void ChangeColor(Color c) {
 		Capsule.GetComponent<MeshRenderer> ().material.color = c;
 		Capsule.transform.Find("Arm").GetComponent<MeshRenderer>().material.color = c;
@@ -157,6 +170,9 @@ public class Player : NetworkBehaviour {
 	[ClientRpc]
 	public void RpcDie(NetworkInstanceId _netId)
 	{
+		if (isLocalPlayer && _netId == GetComponent<NetworkIdentity> ().netId)
+			skyManager.bDead = true;
+
 		if (_netId == GetComponent<NetworkIdentity> ().netId) {
 			ChangeColor (Color.black);
 			gameTag.gameObject.SetActive (false);
@@ -209,19 +225,20 @@ public class Player : NetworkBehaviour {
         }
 
         //Raycast pour savoir si on a toucher un joueur bon joueur
-        if (Input.GetMouseButtonDown(0))//&& yourTurn)
+		if (Input.GetKeyDown(KeyCode.Space))//&& yourTurn)
         {
             RaycastHit hit;
             //Ray ray = PlayerCamera.ScreenPointToRay(Input.mousePosition);
             if (Physics.Raycast(PlayerCamera.transform.position, PlayerCamera.transform.forward, out hit) && yourTurn)
             {
-                Destroy(SelectButton);
-                SelectButton = null;
+                /*Destroy(SelectButton);
+                SelectButton = null;*/
                 Pla = hit.transform.gameObject.GetComponentInParent<Player>();
                 if (Pla != null)
                 {
                     if (Pla.id != id)
                     {
+						cursor.color = Color.red;
                         /*SelectButton = Instantiate ((GameObject)Resources.Load ("PlayerSelect"), new Vector3 (0, 0, 0), Quaternion.identity);
 						SelectButton.transform.SetParent (PlayerCamera.transform);
 						SelectButton.GetComponentInChildren<Text> ().text = "Player " + Pla.pseudo;

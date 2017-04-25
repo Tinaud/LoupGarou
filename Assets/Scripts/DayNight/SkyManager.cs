@@ -12,6 +12,8 @@ public class SkyManager : MonoBehaviour {
 
 	public bool bMenu = false;
 
+	public bool bDead = false;
+
 	public FireLightScript FireCamp {
 		get { return fireCamp; }
 	}
@@ -25,7 +27,10 @@ public class SkyManager : MonoBehaviour {
 			foreach (Sun _s in dayNight)
 				_s.switchCycle = true;
 
-			yield return new WaitUntil (IsFire);
+			if (bDead)
+				yield return 1;
+			
+			yield return new WaitUntil (() => IsFire());
 			{
 				isDay = !isDay;
 
@@ -41,7 +46,7 @@ public class SkyManager : MonoBehaviour {
 				}
 			}
 
-			yield return new WaitUntil (IsReady);
+			yield return new WaitUntil (() => IsReady());
 			{
 				if (!isDay) {
 					RenderSettings.ambientIntensity = 0f;

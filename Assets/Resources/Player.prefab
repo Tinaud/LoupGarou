@@ -509,6 +509,7 @@ MonoBehaviour:
     type: 2}
   Capsule: {fileID: 1358926340777076}
   PlayerCamera: {fileID: 20119214041860348}
+  cursor: {fileID: 114935358223138258}
   gameTag: {fileID: 102395063153419292}
   id: 0
   vote: 0
@@ -516,6 +517,7 @@ MonoBehaviour:
   pseudo: 
   yourTurn: 0
   death: 0
+  timer: 0
 --- !u!114 &114599327569944294
 MonoBehaviour:
   m_ObjectHideFlags: 1

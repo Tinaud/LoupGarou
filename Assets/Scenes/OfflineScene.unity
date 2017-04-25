@@ -1557,6 +1557,7 @@ MonoBehaviour:
   - {fileID: 692350009}
   fireCamp: {fileID: 1028249801}
   bMenu: 1
+  bDead: 0
 --- !u!4 &480576983
 Transform:
   m_ObjectHideFlags: 0
