@@ -49,6 +49,8 @@ public class Player : NetworkBehaviour {
     public bool yourTurn = true;
     [SyncVar]
     public bool death = false;
+    [SyncVar]
+    public bool timer = false;
 
     void Start()
     {
