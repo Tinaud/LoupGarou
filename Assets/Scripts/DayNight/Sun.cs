@@ -4,21 +4,31 @@ using UnityEngine;
 
 public class Sun : MonoBehaviour {
 
-	public float angle = 0, lastangle = 180;
+	float angle = 0, maxangle = 180;
 	public bool switchCycle = false;
+	public bool fire = false;
+
+	bool once = false;
 
 	void Update () {
 
 		if (switchCycle)
 		{
-			transform.RotateAround (new Vector3 (5f, 0, 13f), Vector3.right, 10f * Time.deltaTime); 
+			transform.RotateAround (new Vector3 (5f, 0, 13f), Vector3.right, 20f * Time.deltaTime); 
 			transform.LookAt (new Vector3 (5f, 0, 13f));
 
-			angle += 10f * Time.deltaTime;
+			angle += 20f * Time.deltaTime;
 
-			if (angle >= lastangle) {
+			if (angle >= maxangle / 2f && !once) 
+			{
+				fire = !fire;
+				once = true;
+			}
+
+			if (angle >= maxangle) {
 				switchCycle = false;
 				angle = 0;
+				once = false;
 			}
 		}
 	}

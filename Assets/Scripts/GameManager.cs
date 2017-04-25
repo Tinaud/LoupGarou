@@ -39,7 +39,7 @@ public class GameManager : NetworkBehaviour {
 		}
 	}
 
-    public enum TurnIssue { NO_VICTIMS, VICTIMS, WITCH, DEAD, NO_TURN, TURN };
+    public enum TurnIssue { NO_VICTIMS, VICTIMS, WITCH, DEAD, NO_TURN, TURN, VOTE };
 
 	[SyncVar]
     bool gameStarted;
@@ -57,7 +57,7 @@ public class GameManager : NetworkBehaviour {
     GameObject fireCamp = null;
 
     [SyncVar]
-    public TurnIssue turnIssue = TurnIssue.NO_VICTIMS;
+	public TurnIssue turnIssue = TurnIssue.NO_TURN;
 
     public class SyncListPlayer : SyncListStruct<PlayerInfo> {} 
 
